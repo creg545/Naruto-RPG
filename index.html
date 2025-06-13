@@ -171,5 +171,163 @@
     }
   </script>
 </body>
-      </html>
-  
+</html>
+<script>
+function createCharacter() {
+  const firstName = document.getElementById('firstName').value.trim();
+  const clan = document.getElementById('clanSelect').value;
+  if (!firstName) {
+    alert("Please enter your character's first name.");
+    return;
+  }
+
+  let mentor = "";
+  let mentorMsg = "";
+
+  // Assign mentors based on clan
+  if (clan === "Uzumaki") {
+    mentor = "Jiraiya";
+    mentorMsg = "I'm Jiraiya, your mentor. Let's awaken the true power of the Uzumaki seals!";
+  } else if (clan === "Uchiha") {
+    mentor = "Kakashi";
+    mentorMsg = "I'm Kakashi. As your mentor, I expect nothing less than greatness from an Uchiha.";
+  } else {
+    mentor = "Iruka";
+    mentorMsg = "I'm Iruka. Let's get started on your ninja journey.";
+  }
+
+  alert(`Welcome, ${firstName} ${clan}!\nYour mentor is ${mentor}.\n\n${mentorMsg}`);
+
+  document.getElementById('characterCreation').style.display = 'none';
+  document.getElementById('villageInfo').style.display = 'block';
+  document.getElementById('jutsuList').style.display = 'block';
+  document.getElementById('locationDisplay').style.display = 'block';
+
+  const jutsus = document.getElementById("jutsus");
+  if (clan === "Uzumaki") {
+    jutsus.innerHTML += '<li>Sealing Jutsu</li><li>Adamantine Sealing Chains</li>';
+  } else if (clan === "Uchiha") {
+    jutsus.innerHTML += '<li>Fireball Jutsu</li><li>Sharingan</li>';
+  } else if (clan === "Hyuga") {
+    jutsus.innerHTML += '<li>Byakugan</li><li>Gentle Fist</li>';
+  } else if (clan === "Nara") {
+    jutsus.innerHTML += '<li>Shadow Possession Jutsu</li>';
+  } else if (clan === "Yamanaka") {
+    jutsus.innerHTML += '<li>Mind Transfer Jutsu</li>';
+  } else if (clan === "Akimichi") {
+    jutsus.innerHTML += '<li>Expansion Jutsu</li>';
+  } else if (clan === "Aburame") {
+    jutsus.innerHTML += '<li>Parasitic Insects Jutsu</li>';
+  } else if (clan === "Inuzuka") {
+    jutsus.innerHTML += '<li>Fang Over Fang</li>';
+  } else if (clan === "Kaguya") {
+    jutsus.innerHTML += '<li>Bone Manipulation Jutsu</li>';
+  } else if (clan === "Senju") {
+    jutsus.innerHTML += '<li>Wood Style: Deep Forest Emergence</li>';
+  } else if (clan === "Otsutsuki") {
+    jutsus.innerHTML += '<li>Space-Time Ninjutsu</li><li>Chakra Absorption</li>';
+  }
+}
+</script>
+<script>
+function createCharacter() {
+  const firstName = document.getElementById('firstName').value.trim();
+  const clan = document.getElementById('clanSelect').value;
+  if (!firstName) {
+    alert("Please enter your character's first name.");
+    return;
+  }
+
+  let mentor = { name: "", msg: "", img: "", perk: "" };
+
+  switch(clan) {
+    case "Uzumaki":
+      mentor = {
+        name: "Jiraiya",
+        msg: "Let's awaken your sealing arts, kid! You're the future of the Uzumaki.",
+        img: "https://static.wikia.nocookie.net/naruto/images/b/b0/Jiraiya.png",
+        perk: "Sealing Power +20%"
+      };
+      break;
+    case "Uchiha":
+      mentor = {
+        name: "Kakashi",
+        msg: "Stay sharp. As an Uchiha, your Sharingan is your greatest weapon.",
+        img: "https://static.wikia.nocookie.net/naruto/images/8/81/Kakashi_Part_II.png",
+        perk: "Fire & Genjutsu Mastery +15%"
+      };
+      break;
+    default:
+      mentor = {
+        name: "Iruka",
+        msg: "Let’s start with the basics. I’ll guide you through your journey.",
+        img: "https://static.wikia.nocookie.net/naruto/images/4/44/Iruka_Part_I.png",
+        perk: "XP Gain +10%"
+      };
+  }
+
+  // Show greeting
+  alert(`Welcome, ${firstName} ${clan}!\nYour mentor is ${mentor.name}.\n\n${mentor.msg}`);
+
+  // Reveal game UI
+  document.getElementById('characterCreation').style.display = 'none';
+  document.getElementById('villageInfo').style.display = 'block';
+  document.getElementById('jutsuList').style.display = 'block';
+  document.getElementById('locationDisplay').style.display = 'block';
+  document.getElementById('mentorCard').innerHTML = `
+    <h2>Mentor: ${mentor.name}</h2>
+    <img src="${mentor.img}" alt="${mentor.name}" style="width:100px;border-radius:10px;" />
+    <p><em>${mentor.msg}</em></p>
+    <strong>Training Bonus:</strong> ${mentor.perk}
+  `;
+
+  const jutsus = document.getElementById("jutsus");
+  if (clan === "Uzumaki") {
+    jutsus.innerHTML += '<li>Sealing Jutsu</li><li>Adamantine Sealing Chains</li>';
+  } else if (clan === "Uchiha") {
+    jutsus.innerHTML += '<li>Fireball Jutsu</li><li>Sharingan</li>';
+  } else if (clan === "Hyuga") {
+    jutsus.innerHTML += '<li>Byakugan</li><li>Gentle Fist</li>';
+  } else if (clan === "Nara") {
+    jutsus.innerHTML += '<li>Shadow Possession Jutsu</li>';
+  } else if (clan === "Yamanaka") {
+    jutsus.innerHTML += '<li>Mind Transfer Jutsu</li>';
+  } else if (clan === "Akimichi") {
+    jutsus.innerHTML += '<li>Expansion Jutsu</li>';
+  } else if (clan === "Aburame") {
+    jutsus.innerHTML += '<li>Parasitic Insects Jutsu</li>';
+  } else if (clan === "Inuzuka") {
+    jutsus.innerHTML += '<li>Fang Over Fang</li>';
+  } else if (clan === "Kaguya") {
+    jutsus.innerHTML += '<li>Bone Manipulation Jutsu</li>';
+  } else if (clan === "Senju") {
+    jutsus.innerHTML += '<li>Wood Style: Deep Forest Emergence</li>';
+  } else if (clan === "Otsutsuki") {
+    jutsus.innerHTML += '<li>Space-Time Ninjutsu</li><li>Chakra Absorption</li>';
+  }
+}
+
+function goTo(location) {
+  document.getElementById('currentLocation').textContent = location;
+  const info = {
+    'Training Ground': "You can train to increase your stats.",
+    'Mission Hall': "Pick a mission and start earning rewards.",
+    'Hokage Office': "Report your progress and unlock new villages."
+  };
+  document.getElementById('locationInfo').textContent = info[location] || "Nothing to do here yet.";
+  if (location === 'Mission Hall') {
+    document.getElementById('missionSection').style.display = 'block';
+  }
+}
+        </script>
+        <div class="section" id="mentorCard" style="display:block;"></div>
+        <div class="section jutsu-list" id="jutsuList" style="display:none;">
+  <h2>Learned Jutsus</h2>
+  <ul id="jutsus">
+    <li>Shadow Clone Jutsu</li>
+    <li>Transformation Jutsu</li>
+  </ul>
+</div>
+
+<!-- Mentor card appears below jutsus -->
+<div class="section" id="mentorCard" style="display:block;"></div>
