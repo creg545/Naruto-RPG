@@ -385,3 +385,108 @@
 
 </body>
   </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Naruto RPG</title>
+<style>
+  body { margin: 0; background: #222; color: #fff; font-family: Arial, sans-serif; overflow: hidden; }
+  #gameCanvas { background: #333; display: block; margin: 0 auto; }
+  #touch-controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    user-select: none;
+  }
+  #touch-controls button {
+    width: 50px;
+    height: 50px;
+    margin: 2px;
+    font-size: 24px;
+    border-radius: 8px;
+    border: none;
+    background: #555;
+    color: white;
+    opacity: 0.8;
+  }
+  #touch-controls button:active {
+    background: #888;
+  }
+</style>
+</head>
+<body>
+
+<!-- Your existing UI elements and game container -->
+
+<canvas id="gameCanvas" width="400" height="400"></canvas>
+
+<!-- Touch Controls -->
+<div id="touch-controls">
+  <button ontouchstart="moveKey('ArrowUp', true)" ontouchend="moveKey('ArrowUp', false)">▲</button><br>
+  <button ontouchstart="moveKey('ArrowLeft', true)" ontouchend="moveKey('ArrowLeft', false)">◀</button>
+  <button ontouchstart="moveKey('ArrowDown', true)" ontouchend="moveKey('ArrowDown', false)">▼</button>
+  <button ontouchstart="moveKey('ArrowRight', true)" ontouchend="moveKey('ArrowRight', false)">▶</button>
+</div>
+
+<script>
+  // Your existing JavaScript code here...
+
+  // Example movement variables you probably already have:
+  const keysPressed = {};
+
+  // Add this helper function to simulate key presses from touch
+  function moveKey(key, isPressed) {
+    keysPressed[key] = isPressed;
+  }
+
+  // Add your existing keyboard listeners (if not present)
+  window.addEventListener('keydown', (e) => {
+    keysPressed[e.key] = true;
+  });
+  window.addEventListener('keyup', (e) => {
+    keysPressed[e.key] = false;
+  });
+
+  // Your existing game loop and movement update should work with keysPressed object
+  // For example:
+
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let player = { x: 200, y: 200, size: 20, color: 'orange' };
+
+  function update() {
+    if (keysPressed['ArrowUp']) player.y -= 2;
+    if (keysPressed['ArrowDown']) player.y += 2;
+    if (keysPressed['ArrowLeft']) player.x -= 2;
+    if (keysPressed['ArrowRight']) player.x += 2;
+
+    // Keep player inside canvas bounds
+    player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+    player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.size, player.size);
+
+    // Draw NPCs, villages, or other game stuff here...
+  }
+
+  function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+  }
+
+  gameLoop();
+
+</script>
+
+</body>
+</html>
