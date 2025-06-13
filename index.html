@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Naruto: Legacy of the Uzamaki</title>
+  <title>Naruto RPG: Legacy of the Uzamaki</title>
   <style>
     body {
       background-color: #1a1a1a;
@@ -26,7 +26,7 @@
       flex-direction: column;
       align-items: center;
     }
-    .character-select, .village-info, .jutsu-list {
+    .section {
       margin: 20px;
       padding: 15px;
       background: #333;
@@ -34,31 +34,37 @@
       width: 90%;
       max-width: 600px;
     }
-    select, button {
+    select, button, input {
       padding: 10px;
       margin-top: 10px;
       font-size: 16px;
     }
-    .jutsu-list ul {
+    .jutsu-list ul, .mission-list ul {
       list-style-type: none;
       padding: 0;
     }
-    .jutsu-list li {
+    .jutsu-list li, .mission-list li {
       margin-bottom: 5px;
+    }
+    .map {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+    }
+    .map button {
+      padding: 10px 20px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Naruto: Legacy of the Uzamaki</h1>
+    <h1>Naruto RPG: Legacy of the Uzamaki</h1>
   </header>
   <div class="game-container">
-    <div class="character-select">
+    <div class="section" id="characterCreation">
       <h2>Create Your Ninja</h2>
-      <label for="firstName">First Name:</label>
-      <input type="text" id="firstName" placeholder="Enter first name" />
-      <br><br>
-      <label for="clanSelect">Select Clan:</label>
+      <input type="text" id="firstName" placeholder="First Name" /><br>
       <select id="clanSelect">
         <option>Uzumaki</option>
         <option>Uchiha</option>
@@ -71,277 +77,46 @@
         <option>Kaguya</option>
         <option>Senju</option>
         <option>Otsutsuki</option>
-      </select>
-      <br><br>
+      </select><br>
       <button onclick="createCharacter()">Create Character</button>
     </div>
 
-    <div class="village-info" id="villageInfo" style="display:none;">
+    <div class="section" id="villageInfo" style="display:none;">
       <h2>Welcome to the Hidden Leaf Village</h2>
-      <p>Your journey begins here. Complete missions to unlock new villages.</p>
+      <p>Your journey begins here. Use the map below to explore locations.</p>
+      <div class="map">
+        <button onclick="goTo('Training Ground')">Training Ground</button>
+        <button onclick="goTo('Mission Hall')">Mission Hall</button>
+        <button onclick="goTo('Hokage Office')">Hokage Office</button>
+      </div>
     </div>
 
-    <div class="jutsu-list" id="jutsuList" style="display:none;">
+    <div class="section jutsu-list" id="jutsuList" style="display:none;">
       <h2>Learned Jutsus</h2>
       <ul id="jutsus">
         <li>Shadow Clone Jutsu</li>
         <li>Transformation Jutsu</li>
-        <li>Sealing Jutsu (Clan Bonus)</li>
       </ul>
+    </div>
+
+    <div class="section mission-list" id="missionSection" style="display:none;">
+      <h2>Missions</h2>
+      <ul>
+        <li>D-Rank: Deliver a scroll to the academy</li>
+        <li>C-Rank: Escort a merchant</li>
+        <li>B-Rank: Investigate missing ninjas</li>
+        <li>A-Rank: Defend the border</li>
+        <li>S-Rank: Spy on the Hidden Mist</li>
+      </ul>
+    </div>
+
+    <div class="section" id="locationDisplay" style="display:none;">
+      <h2>Location: <span id="currentLocation">None</span></h2>
+      <p id="locationInfo">Move around to unlock events and missions.</p>
     </div>
   </div>
 
   <script>
-    function createCharacter() {
-      const firstName = document.getElementById('firstName').value;
-      const clan = document.getElementById('clanSelect').value;
-      if (!firstName) {
-        alert("Please enter a first name");
-        return;
-      }
-      alert(`Welcome, ${firstName} ${clan}!`);
-      document.getElementById("villageInfo").style.display = 'block';
-      document.getElementById("jutsuList").style.display = 'block';
-
-      const jutsus = document.getElementById("jutsus");
-      if (clan === "Uzumaki") {
-        jutsus.innerHTML += '<li>Adamantine Sealing Chains</li>';
-      } else if (clan === "Uchiha") {
-        jutsus.innerHTML += '<li>Fireball Jutsu</li><li>Sharingan</li>';
-      } else if (clan === "Hyuga") {
-        jutsus.innerHTML += '<li>Byakugan</li><li>Gentle Fist</li>';
-      }
-    }
-  </script>
-</body>
-  </html>
-<!DOCTYPE html><html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Naruto RPG: Legacy of the Uzamaki</title>
-  <style>
-    body {
-      background-color: #1a1a1a;
-      color: #fff;
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      text-align: center;
-      padding: 20px;
-      background-color: #e63946;
-    }
-    header h1 {
-      margin: 0;
-    }
-    .game-container {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .section {
-      margin: 20px;
-      padding: 15px;
-      background: #333;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 600px;
-    }
-    select, button, input {
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 16px;
-    }
-    .jutsu-list ul, .mission-list ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    .jutsu-list li, .mission-list li {
-      margin-bottom: 5px;
-    }
-    .map {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 10px;
-    }
-    .map button {
-      padding: 10px 20px;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Naruto RPG: Legacy of the Uzamaki</h1>
-  </header>
-  <div class="game-container">
-    <div class="section" id="characterCreation">
-      <h2>Create Your Ninja</h2>
-      <input type="text" id="firstName" placeholder="First Name" /><br>
-      <select id="clanSelect">
-        <option>Uzumaki</option>
-        <option>Uchiha</option>
-        <option>Hyuga</option>
-        <option>Nara</option>
-        <option>Yamanaka</option>
-        <option>Akimichi</option>
-        <option>Aburame</option>
-        <option>Inuzuka</option>
-        <option>Kaguya</option>
-        <option>Senju</option>
-        <option>Otsutsuki</option>
-      </select><br>
-      <button onclick="createCharacter()">Create Character</button>
-    </div><div class="section" id="villageInfo" style="display:none;">
-  <h2>Welcome to the Hidden Leaf Village</h2>
-  <p>Your journey begins here. Use the map below to explore locations.</p>
-  <div class="map">
-    <button onclick="goTo('Training Ground')">Training Ground</button>
-    <button onclick="goTo('Mission Hall')">Mission Hall</button>
-    <button onclick="goTo('Hokage Office')">Hokage Office</button>
-  </div>
-</div>
-
-<div class="section jutsu-list" id="jutsuList" style="display:none;">
-  <h2>Learned Jutsus</h2>
-  <ul id="jutsus">
-    <li>Shadow Clone Jutsu</li>
-    <li>Transformation Jutsu</li>
-  </ul>
-</div>
-
-<div class="section mission-list" id="missionSection" style="display:none;">
-  <h2>Missions</h2>
-  <ul>
-    <li>D-Rank: Deliver a scroll to the academy</li>
-    <li>C-Rank: Escort a merchant</li>
-    <li>B-Rank: Investigate missing ninjas</li>
-    <li>A-Rank: Defend the border</li>
-    <li>S-Rank: Spy on the Hidden Mist</li>
-  </ul>
-</div>
-
-<div class="section" id="locationDisplay" style="display:none;">
-  <h2>Location: <span id="currentLocation">None</span></h2>
-  <p id="locationInfo">Move around to unlock
-<!DOCTYPE html><html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Naruto RPG: Legacy of the Uzamaki</title>
-  <style>
-    body {
-      background-color: #1a1a1a;
-      color: #fff;
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      text-align: center;
-      padding: 20px;
-      background-color: #e63946;
-    }
-    header h1 {
-      margin: 0;
-    }
-    .game-container {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .section {
-      margin: 20px;
-      padding: 15px;
-      background: #333;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 600px;
-    }
-    select, button, input {
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 16px;
-    }
-    .jutsu-list ul, .mission-list ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    .jutsu-list li, .mission-list li {
-      margin-bottom: 5px;
-    }
-    .map {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 10px;
-    }
-    .map button {
-      padding: 10px 20px;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Naruto RPG: Legacy of the Uzamaki</h1>
-  </header>
-  <div class="game-container">
-    <div class="section" id="characterCreation">
-      <h2>Create Your Ninja</h2>
-      <input type="text" id="firstName" placeholder="First Name" /><br>
-      <select id="clanSelect">
-        <option>Uzumaki</option>
-        <option>Uchiha</option>
-        <option>Hyuga</option>
-        <option>Nara</option>
-        <option>Yamanaka</option>
-        <option>Akimichi</option>
-        <option>Aburame</option>
-        <option>Inuzuka</option>
-        <option>Kaguya</option>
-        <option>Senju</option>
-        <option>Otsutsuki</option>
-      </select><br>
-      <button onclick="createCharacter()">Create Character</button>
-    </div><div class="section" id="villageInfo" style="display:none;">
-  <h2>Welcome to the Hidden Leaf Village</h2>
-  <p>Your journey begins here. Use the map below to explore locations.</p>
-  <div class="map">
-    <button onclick="goTo('Training Ground')">Training Ground</button>
-    <button onclick="goTo('Mission Hall')">Mission Hall</button>
-    <button onclick="goTo('Hokage Office')">Hokage Office</button>
-  </div>
-</div>
-
-<div class="section jutsu-list" id="jutsuList" style="display:none;">
-  <h2>Learned Jutsus</h2>
-  <ul id="jutsus">
-    <li>Shadow Clone Jutsu</li>
-    <li>Transformation Jutsu</li>
-  </ul>
-</div>
-
-<div class="section mission-list" id="missionSection" style="display:none;">
-  <h2>Missions</h2>
-  <ul>
-    <li>D-Rank: Deliver a scroll to the academy</li>
-    <li>C-Rank: Escort a merchant</li>
-    <li>B-Rank: Investigate missing ninjas</li>
-    <li>A-Rank: Defend the border</li>
-    <li>S-Rank: Spy on the Hidden Mist</li>
-  </ul>
-</div>
-
-<div class="section" id="locationDisplay" style="display:none;">
-  <h2>Location: <span id="currentLocation">None</span></h2>
-  <p id="locationInfo">Move around to unlock events and missions.</p>
-</div>
-
-  </div>  <script>
     function createCharacter() {
       const firstName = document.getElementById('firstName').value.trim();
       const clan = document.getElementById('clanSelect').value;
@@ -363,6 +138,22 @@
         jutsus.innerHTML += '<li>Fireball Jutsu</li><li>Sharingan</li>';
       } else if (clan === "Hyuga") {
         jutsus.innerHTML += '<li>Byakugan</li><li>Gentle Fist</li>';
+      } else if (clan === "Nara") {
+        jutsus.innerHTML += '<li>Shadow Possession Jutsu</li>';
+      } else if (clan === "Yamanaka") {
+        jutsus.innerHTML += '<li>Mind Transfer Jutsu</li>';
+      } else if (clan === "Akimichi") {
+        jutsus.innerHTML += '<li>Expansion Jutsu</li>';
+      } else if (clan === "Aburame") {
+        jutsus.innerHTML += '<li>Parasitic Insects Jutsu</li>';
+      } else if (clan === "Inuzuka") {
+        jutsus.innerHTML += '<li>Fang Over Fang</li>';
+      } else if (clan === "Kaguya") {
+        jutsus.innerHTML += '<li>Bone Manipulation Jutsu</li>';
+      } else if (clan === "Senju") {
+        jutsus.innerHTML += '<li>Wood Style: Deep Forest Emergence</li>';
+      } else if (clan === "Otsutsuki") {
+        jutsus.innerHTML += '<li>Space-Time Ninjutsu</li><li>Chakra Absorption</li>';
       }
     }
 
@@ -378,6 +169,7 @@
         document.getElementById('missionSection').style.display = 'block';
       }
     }
-  </script></body>
-  </html>
+  </script>
+</body>
+      </html>
   
