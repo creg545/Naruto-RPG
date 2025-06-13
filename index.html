@@ -1,333 +1,387 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Naruto RPG: Legacy of the Uzamaki</title>
-  <style>
-    body {
-      background-color: #1a1a1a;
-      color: #fff;
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      text-align: center;
-      padding: 20px;
-      background-color: #e63946;
-    }
-    header h1 {
-      margin: 0;
-    }
-    .game-container {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .section {
-      margin: 20px;
-      padding: 15px;
-      background: #333;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 600px;
-    }
-    select, button, input {
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 16px;
-    }
-    .jutsu-list ul, .mission-list ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    .jutsu-list li, .mission-list li {
-      margin-bottom: 5px;
-    }
-    .map {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 10px;
-    }
-    .map button {
-      padding: 10px 20px;
-      font-size: 14px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Naruto RPG Expanded</title>
+<style>
+  html, body {
+    margin:0; padding:0; overflow:hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:#222; color:#eee;
+    user-select:none;
+  }
+  #creation {
+    position:absolute; top:10px; left:10px;
+    background:#111; padding:20px;
+    border-radius:8px; width:320px;
+    z-index:10;
+  }
+  #game {
+    display:none;
+    width:100vw; height:100vh;
+    position:relative;
+    background-size: cover;
+    background-position:center;
+  }
+  #player {
+    width:40px; height:40px;
+    background:url('https://i.imgur.com/jQsDL0S.png') center/contain no-repeat;
+    position:absolute;
+    top:50%; left:50%;
+    transform: translate(-50%, -50%);
+    z-index:5;
+  }
+  #npc {
+    width:40px; height:40px;
+    background:url('https://i.imgur.com/zXjzCR6.png') center/contain no-repeat;
+    position:absolute;
+    z-index:4;
+    cursor:pointer;
+  }
+  #info {
+    position:absolute;
+    top:10px; left:10px;
+    background:rgba(0,0,0,0.75);
+    padding:12px;
+    border-radius:8px;
+    max-width:320px;
+    font-size:14px;
+    line-height:1.4;
+    z-index:8;
+    user-select:none;
+  }
+  ul { padding-left:18px; margin-top:6px; }
+  button { cursor:pointer; padding:6px 12px; font-size:14px; }
+  #message {
+    position:absolute;
+    bottom:10px; left:50%;
+    transform: translateX(-50%);
+    background:rgba(0,0,0,0.8);
+    padding:10px 20px;
+    border-radius:10px;
+    font-size:16px;
+    z-index:9;
+    display:none;
+    max-width:90vw;
+    text-align:center;
+  }
+  #travel {
+    margin-top:8px;
+    background:#333;
+    color:#eee;
+    border:none;
+    padding:8px;
+    border-radius:6px;
+    width:100%;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <h1>Naruto RPG: Legacy of the Uzamaki</h1>
-  </header>
-  <div class="game-container">
-    <div class="section" id="characterCreation">
-      <h2>Create Your Ninja</h2>
-      <input type="text" id="firstName" placeholder="First Name" /><br>
-      <select id="clanSelect">
-        <option>Uzumaki</option>
-        <option>Uchiha</option>
-        <option>Hyuga</option>
-        <option>Nara</option>
-        <option>Yamanaka</option>
-        <option>Akimichi</option>
-        <option>Aburame</option>
-        <option>Inuzuka</option>
-        <option>Kaguya</option>
-        <option>Senju</option>
-        <option>Otsutsuki</option>
-      </select><br>
-      <button onclick="createCharacter()">Create Character</button>
-    </div>
 
-    <div class="section" id="villageInfo" style="display:none;">
-      <h2>Welcome to the Hidden Leaf Village</h2>
-      <p>Your journey begins here. Use the map below to explore locations.</p>
-      <div class="map">
-        <button onclick="goTo('Training Ground')">Training Ground</button>
-        <button onclick="goTo('Mission Hall')">Mission Hall</button>
-        <button onclick="goTo('Hokage Office')">Hokage Office</button>
-      </div>
-    </div>
-
-    <div class="section jutsu-list" id="jutsuList" style="display:none;">
-      <h2>Learned Jutsus</h2>
-      <ul id="jutsus">
-        <li>Shadow Clone Jutsu</li>
-        <li>Transformation Jutsu</li>
-      </ul>
-    </div>
-
-    <div class="section mission-list" id="missionSection" style="display:none;">
-      <h2>Missions</h2>
-      <ul>
-        <li>D-Rank: Deliver a scroll to the academy</li>
-        <li>C-Rank: Escort a merchant</li>
-        <li>B-Rank: Investigate missing ninjas</li>
-        <li>A-Rank: Defend the border</li>
-        <li>S-Rank: Spy on the Hidden Mist</li>
-      </ul>
-    </div>
-
-    <div class="section" id="locationDisplay" style="display:none;">
-      <h2>Location: <span id="currentLocation">None</span></h2>
-      <p id="locationInfo">Move around to unlock events and missions.</p>
-    </div>
-  </div>
-
-  <script>
-    function createCharacter() {
-      const firstName = document.getElementById('firstName').value.trim();
-      const clan = document.getElementById('clanSelect').value;
-      if (!firstName) {
-        alert("Please enter your character's first name.");
-        return;
-      }
-
-      alert(`Welcome, ${firstName} ${clan}!`);
-      document.getElementById('characterCreation').style.display = 'none';
-      document.getElementById('villageInfo').style.display = 'block';
-      document.getElementById('jutsuList').style.display = 'block';
-      document.getElementById('locationDisplay').style.display = 'block';
-
-      const jutsus = document.getElementById("jutsus");
-      if (clan === "Uzumaki") {
-        jutsus.innerHTML += '<li>Sealing Jutsu</li><li>Adamantine Sealing Chains</li>';
-      } else if (clan === "Uchiha") {
-        jutsus.innerHTML += '<li>Fireball Jutsu</li><li>Sharingan</li>';
-      } else if (clan === "Hyuga") {
-        jutsus.innerHTML += '<li>Byakugan</li><li>Gentle Fist</li>';
-      } else if (clan === "Nara") {
-        jutsus.innerHTML += '<li>Shadow Possession Jutsu</li>';
-      } else if (clan === "Yamanaka") {
-        jutsus.innerHTML += '<li>Mind Transfer Jutsu</li>';
-      } else if (clan === "Akimichi") {
-        jutsus.innerHTML += '<li>Expansion Jutsu</li>';
-      } else if (clan === "Aburame") {
-        jutsus.innerHTML += '<li>Parasitic Insects Jutsu</li>';
-      } else if (clan === "Inuzuka") {
-        jutsus.innerHTML += '<li>Fang Over Fang</li>';
-      } else if (clan === "Kaguya") {
-        jutsus.innerHTML += '<li>Bone Manipulation Jutsu</li>';
-      } else if (clan === "Senju") {
-        jutsus.innerHTML += '<li>Wood Style: Deep Forest Emergence</li>';
-      } else if (clan === "Otsutsuki") {
-        jutsus.innerHTML += '<li>Space-Time Ninjutsu</li><li>Chakra Absorption</li>';
-      }
-    }
-
-    function goTo(location) {
-      document.getElementById('currentLocation').textContent = location;
-      const info = {
-        'Training Ground': "You can train to increase your stats.",
-        'Mission Hall': "Pick a mission and start earning rewards.",
-        'Hokage Office': "Report your progress and unlock new villages."
-      };
-      document.getElementById('locationInfo').textContent = info[location] || "Nothing to do here yet.";
-      if (location === 'Mission Hall') {
-        document.getElementById('missionSection').style.display = 'block';
-      }
-    }
-  </script>
-</body>
-</html>
-<script>
-function createCharacter() {
-  const firstName = document.getElementById('firstName').value.trim();
-  const clan = document.getElementById('clanSelect').value;
-  if (!firstName) {
-    alert("Please enter your character's first name.");
-    return;
-  }
-
-  let mentor = "";
-  let mentorMsg = "";
-
-  // Assign mentors based on clan
-  if (clan === "Uzumaki") {
-    mentor = "Jiraiya";
-    mentorMsg = "I'm Jiraiya, your mentor. Let's awaken the true power of the Uzumaki seals!";
-  } else if (clan === "Uchiha") {
-    mentor = "Kakashi";
-    mentorMsg = "I'm Kakashi. As your mentor, I expect nothing less than greatness from an Uchiha.";
-  } else {
-    mentor = "Iruka";
-    mentorMsg = "I'm Iruka. Let's get started on your ninja journey.";
-  }
-
-  alert(`Welcome, ${firstName} ${clan}!\nYour mentor is ${mentor}.\n\n${mentorMsg}`);
-
-  document.getElementById('characterCreation').style.display = 'none';
-  document.getElementById('villageInfo').style.display = 'block';
-  document.getElementById('jutsuList').style.display = 'block';
-  document.getElementById('locationDisplay').style.display = 'block';
-
-  const jutsus = document.getElementById("jutsus");
-  if (clan === "Uzumaki") {
-    jutsus.innerHTML += '<li>Sealing Jutsu</li><li>Adamantine Sealing Chains</li>';
-  } else if (clan === "Uchiha") {
-    jutsus.innerHTML += '<li>Fireball Jutsu</li><li>Sharingan</li>';
-  } else if (clan === "Hyuga") {
-    jutsus.innerHTML += '<li>Byakugan</li><li>Gentle Fist</li>';
-  } else if (clan === "Nara") {
-    jutsus.innerHTML += '<li>Shadow Possession Jutsu</li>';
-  } else if (clan === "Yamanaka") {
-    jutsus.innerHTML += '<li>Mind Transfer Jutsu</li>';
-  } else if (clan === "Akimichi") {
-    jutsus.innerHTML += '<li>Expansion Jutsu</li>';
-  } else if (clan === "Aburame") {
-    jutsus.innerHTML += '<li>Parasitic Insects Jutsu</li>';
-  } else if (clan === "Inuzuka") {
-    jutsus.innerHTML += '<li>Fang Over Fang</li>';
-  } else if (clan === "Kaguya") {
-    jutsus.innerHTML += '<li>Bone Manipulation Jutsu</li>';
-  } else if (clan === "Senju") {
-    jutsus.innerHTML += '<li>Wood Style: Deep Forest Emergence</li>';
-  } else if (clan === "Otsutsuki") {
-    jutsus.innerHTML += '<li>Space-Time Ninjutsu</li><li>Chakra Absorption</li>';
-  }
-}
-</script>
-<script>
-function createCharacter() {
-  const firstName = document.getElementById('firstName').value.trim();
-  const clan = document.getElementById('clanSelect').value;
-  if (!firstName) {
-    alert("Please enter your character's first name.");
-    return;
-  }
-
-  let mentor = { name: "", msg: "", img: "", perk: "" };
-
-  switch(clan) {
-    case "Uzumaki":
-      mentor = {
-        name: "Jiraiya",
-        msg: "Let's awaken your sealing arts, kid! You're the future of the Uzumaki.",
-        img: "https://static.wikia.nocookie.net/naruto/images/b/b0/Jiraiya.png",
-        perk: "Sealing Power +20%"
-      };
-      break;
-    case "Uchiha":
-      mentor = {
-        name: "Kakashi",
-        msg: "Stay sharp. As an Uchiha, your Sharingan is your greatest weapon.",
-        img: "https://static.wikia.nocookie.net/naruto/images/8/81/Kakashi_Part_II.png",
-        perk: "Fire & Genjutsu Mastery +15%"
-      };
-      break;
-    default:
-      mentor = {
-        name: "Iruka",
-        msg: "Let’s start with the basics. I’ll guide you through your journey.",
-        img: "https://static.wikia.nocookie.net/naruto/images/4/44/Iruka_Part_I.png",
-        perk: "XP Gain +10%"
-      };
-  }
-
-  // Show greeting
-  alert(`Welcome, ${firstName} ${clan}!\nYour mentor is ${mentor.name}.\n\n${mentor.msg}`);
-
-  // Reveal game UI
-  document.getElementById('characterCreation').style.display = 'none';
-  document.getElementById('villageInfo').style.display = 'block';
-  document.getElementById('jutsuList').style.display = 'block';
-  document.getElementById('locationDisplay').style.display = 'block';
-  document.getElementById('mentorCard').innerHTML = `
-    <h2>Mentor: ${mentor.name}</h2>
-    <img src="${mentor.img}" alt="${mentor.name}" style="width:100px;border-radius:10px;" />
-    <p><em>${mentor.msg}</em></p>
-    <strong>Training Bonus:</strong> ${mentor.perk}
-  `;
-
-  const jutsus = document.getElementById("jutsus");
-  if (clan === "Uzumaki") {
-    jutsus.innerHTML += '<li>Sealing Jutsu</li><li>Adamantine Sealing Chains</li>';
-  } else if (clan === "Uchiha") {
-    jutsus.innerHTML += '<li>Fireball Jutsu</li><li>Sharingan</li>';
-  } else if (clan === "Hyuga") {
-    jutsus.innerHTML += '<li>Byakugan</li><li>Gentle Fist</li>';
-  } else if (clan === "Nara") {
-    jutsus.innerHTML += '<li>Shadow Possession Jutsu</li>';
-  } else if (clan === "Yamanaka") {
-    jutsus.innerHTML += '<li>Mind Transfer Jutsu</li>';
-  } else if (clan === "Akimichi") {
-    jutsus.innerHTML += '<li>Expansion Jutsu</li>';
-  } else if (clan === "Aburame") {
-    jutsus.innerHTML += '<li>Parasitic Insects Jutsu</li>';
-  } else if (clan === "Inuzuka") {
-    jutsus.innerHTML += '<li>Fang Over Fang</li>';
-  } else if (clan === "Kaguya") {
-    jutsus.innerHTML += '<li>Bone Manipulation Jutsu</li>';
-  } else if (clan === "Senju") {
-    jutsus.innerHTML += '<li>Wood Style: Deep Forest Emergence</li>';
-  } else if (clan === "Otsutsuki") {
-    jutsus.innerHTML += '<li>Space-Time Ninjutsu</li><li>Chakra Absorption</li>';
-  }
-}
-
-function goTo(location) {
-  document.getElementById('currentLocation').textContent = location;
-  const info = {
-    'Training Ground': "You can train to increase your stats.",
-    'Mission Hall': "Pick a mission and start earning rewards.",
-    'Hokage Office': "Report your progress and unlock new villages."
-  };
-  document.getElementById('locationInfo').textContent = info[location] || "Nothing to do here yet.";
-  if (location === 'Mission Hall') {
-    document.getElementById('missionSection').style.display = 'block';
-  }
-}
-        </script>
-        <div class="section" id="mentorCard" style="display:block;"></div>
-        <div class="section jutsu-list" id="jutsuList" style="display:none;">
-  <h2>Learned Jutsus</h2>
-  <ul id="jutsus">
-    <li>Shadow Clone Jutsu</li>
-    <li>Transformation Jutsu</li>
-  </ul>
+<div id="creation">
+  <h3>Create Character</h3>
+  <input id="firstName" placeholder="First Name" /><br><br>
+  <select id="clanSelect" aria-label="Select Clan">
+    <option value="" disabled selected>Select Clan</option>
+    <option>Uzumaki</option>
+    <option>Uchiha</option>
+    <option>Hyuga</option>
+    <option>Nara</option>
+    <option>Yamanaka</option>
+    <option>Akimichi</option>
+    <option>Aburame</option>
+    <option>Inuzuka</option>
+    <option>Kaguya</option>
+    <option>Senju</option>
+    <option>Otsutsuki</option>
+  </select><br><br>
+  <button onclick="startGame()">Start</button>
 </div>
 
-<!-- Mentor card appears below jutsus -->
-<div class="section" id="mentorCard" style="display:block;"></div>
+<div id="game">
+  <div id="player" aria-label="Player character"></div>
+  <div id="npc" title="Click to talk" aria-label="Non-player character" style="display:none;"></div>
+  <div id="info" role="region" aria-live="polite">
+    <div id="welcome"></div>
+    <h4>Jutsus:</h4>
+    <ul id="jutsus"></ul>
+    <p><b>Controls:</b> WASD or arrows to move. Press <b>J</b> to cast jutsu.</p>
+    <select id="travel" title="Travel to another village" style="display:none;"></select>
+  </div>
+</div>
+
+<div id="message" role="alert" aria-live="assertive"></div>
+
+<script>
+  // Elements
+  const creation = document.getElementById('creation');
+  const game = document.getElementById('game');
+  const player = document.getElementById('player');
+  const npc = document.getElementById('npc');
+  const welcome = document.getElementById('welcome');
+  const jutsusList = document.getElementById('jutsus');
+  const message = document.getElementById('message');
+  const travelSelect = document.getElementById('travel');
+
+  // Game state variables
+  let x, y;
+  const speed = 10;
+  let canMove = false;
+  let currentVillage = 'Leaf';
+  const villages = {
+    Leaf: {
+      bg: 'https://i.imgur.com/f0EM3Ez.jpg',
+      npcs: [{x: 300, y: 300, name:'Kakashi', dialog:'Train hard to awaken your Sharingan!'}],
+      unlocks: ['Sand'],
+    },
+    Sand: {
+      bg: 'https://i.imgur.com/8RwDN9U.jpg',
+      npcs: [{x: 200, y: 400, name:'Gaara', dialog:'Control your sand to protect the village.'}],
+      unlocks: ['Mist'],
+    },
+    Mist: {
+      bg: 'https://i.imgur.com/xk6eWzx.jpg',
+      npcs: [{x: 400, y: 200, name:'Zabuza', dialog:'Mist ninja never show mercy!'}],
+      unlocks: [],
+    }
+  };
+  let unlockedVillages = ['Leaf'];
+
+  let playerData = {
+    firstName: '',
+    clan: '',
+    mentor: '',
+    mentorMsg: '',
+    jutsus: [],
+  };
+
+  // Start the game after character creation
+  function startGame() {
+    const firstName = document.getElementById('firstName').value.trim();
+    const clan = document.getElementById('clanSelect').value;
+    if (!firstName || !clan) {
+      alert("Please enter your first name and select a clan.");
+      return;
+    }
+
+    playerData.firstName = firstName;
+    playerData.clan = clan;
+
+    // Mentor and jutsus by clan
+    switch(clan) {
+      case 'Uzumaki':
+        playerData.mentor = 'Jiraiya';
+        playerData.mentorMsg = "Let's master your sealing techniques.";
+        playerData.jutsus = ['Sealing Jutsu', 'Adamantine Sealing Chains'];
+        break;
+      case 'Uchiha':
+        playerData.mentor = 'Kakashi';
+        playerData.mentorMsg = "Time to awaken your Sharingan.";
+        playerData.jutsus = ['Fireball Jutsu', 'Sharingan'];
+        break;
+      case 'Hyuga':
+        playerData.mentor = 'Hiashi';
+        playerData.mentorMsg = "Train your Byakugan and Gentle Fist.";
+        playerData.jutsus = ['Byakugan', 'Gentle Fist'];
+        break;
+      case 'Nara':
+        playerData.mentor = 'Shikamaru';
+        playerData.mentorMsg = "Use your shadow manipulation wisely.";
+        playerData.jutsus = ['Shadow Possession Jutsu'];
+        break;
+      case 'Yamanaka':
+        playerData.mentor = 'Ino';
+        playerData.mentorMsg = "Focus on mind transfer techniques.";
+        playerData.jutsus = ['Mind Body Switch Technique'];
+        break;
+      case 'Akimichi':
+        playerData.mentor = 'Choji';
+        playerData.mentorMsg = "Build your strength and size.";
+        playerData.jutsus = ['Multi-Size Technique'];
+        break;
+      case 'Aburame':
+        playerData.mentor = 'Shino';
+        playerData.mentorMsg = "Control your bugs carefully.";
+        playerData.jutsus = ['Insect Jutsu'];
+        break;
+      case 'Inuzuka':
+        playerData.mentor = 'Kiba';
+        playerData.mentorMsg = "Partner with your canine.";
+        playerData.jutsus = ['Beast Human Clone'];
+        break;
+      case 'Kaguya':
+        playerData.mentor = 'Kimimaro';
+        playerData.mentorMsg = "Master your bone techniques.";
+        playerData.jutsus = ['Dance of the Camellia'];
+        break;
+      case 'Senju':
+        playerData.mentor = 'Tsunade';
+        playerData.mentorMsg = "Harness your healing abilities.";
+        playerData.jutsus = ['Medical Ninjutsu', 'Wood Release'];
+        break;
+      case 'Otsutsuki':
+        playerData.mentor = 'Kaguya';
+        playerData.mentorMsg = "Master godly chakra powers.";
+        playerData.jutsus = ['Truth-Seeking Balls', 'Chakra Absorption'];
+        break;
+      default:
+        playerData.mentor = 'Iruka';
+        playerData.mentorMsg = "Welcome to the ninja world.";
+        playerData.jutsus = ['Basic Ninja Techniques'];
+    }
+
+    creation.style.display = 'none';
+    game.style.display = 'block';
+
+    // Start position center screen
+    x = window.innerWidth / 2;
+    y = window.innerHeight / 2;
+    updatePlayerPos();
+
+    showVillage(currentVillage);
+    updateInfo();
+    setupTravel();
+    canMove = true;
+  }
+
+  // Show village and NPC
+  function showVillage(village) {
+    if (!villages[village]) return;
+    currentVillage = village;
+    game.style.backgroundImage = `url('${villages[village].bg}')`;
+
+    // Place first NPC
+    const npcs = villages[village].npcs;
+    if (npcs.length > 0) {
+      npc.style.left = npcs[0].x + 'px';
+      npc.style.top = npcs[0].y + 'px';
+      npc.style.display = 'block';
+      npc.dataset.dialog = npcs[0].dialog;
+      npc.title = npcs[0].name + ' (click to talk)';
+    } else {
+      npc.style.display = 'none';
+    }
+  }
+
+  // Update info panel
+  function updateInfo() {
+    welcome.innerHTML = `<b>Welcome, ${playerData.firstName} ${playerData.clan}!</b><br>Your mentor: ${playerData.mentor}<br>${playerData.mentorMsg}`;
+    jutsusList.innerHTML = playerData.jutsus.map(j => `<li>${j}</li>`).join('');
+  }
+
+  // Update player position on screen
+  function updatePlayerPos() {
+    player.style.left = x + 'px';
+    player.style.top = y + 'px';
+  }
+
+  // Travel dropdown setup
+  function setupTravel() {
+    travelSelect.style.display = 'block';
+    travelSelect.innerHTML = '';
+    const defaultOption = document.createElement('option');
+    defaultOption.text = 'Travel to another village';
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    travelSelect.appendChild(defaultOption);
+
+    unlockedVillages.forEach(v => {
+      if (v !== currentVillage) {
+        let opt = document.createElement('option');
+        opt.value = v;
+        opt.text = v + ' Village';
+        travelSelect.appendChild(opt);
+      }
+    });
+
+    travelSelect.onchange = () => {
+      const dest = travelSelect.value;
+      if(dest && villages[dest]){
+        showMessage(`Traveling to ${dest} Village...`);
+        setTimeout(() => {
+          showVillage(dest);
+          travelSelect.selectedIndex = 0;
+          x = window.innerWidth / 2;
+          y = window.innerHeight / 2;
+          updatePlayerPos();
+          currentVillage = dest;
+        }, 1500);
+      }
+    }
+  }
+
+  // NPC interaction unlocks new village(s)
+  npc.onclick = () => {
+    if(!npc.dataset.dialog) return;
+    showMessage(npc.dataset.dialog);
+
+    const unlocks = villages[currentVillage].unlocks || [];
+    unlocks.forEach(v => {
+      if (!unlockedVillages.includes(v)) {
+        unlockedVillages.push(v);
+        showMessage(`You unlocked ${v} Village! You can now travel there.`);
+        setupTravel();
+      }
+    });
+  };
+
+  // Show message popup
+  let msgTimeout;
+  function showMessage(txt, duration = 3000) {
+    clearTimeout(msgTimeout);
+    message.style.display = 'block';
+    message.textContent = txt;
+    msgTimeout = setTimeout(() => {
+      message.style.display = 'none';
+    }, duration);
+  }
+
+  // Movement controls and jutsu casting
+  document.onkeydown = e => {
+    if (!canMove) return;
+    switch(e.key.toLowerCase()) {
+      case 'w':
+      case 'arrowup':
+        y = Math.max(0, y - speed);
+        break;
+      case 's':
+      case 'arrowdown':
+        y = Math.min(window.innerHeight - 40, y + speed);
+        break;
+      case 'a':
+      case 'arrowleft':
+        x = Math.max(0, x - speed);
+        break;
+      case 'd':
+      case 'arrowright':
+        x = Math.min(window.innerWidth - 40, x + speed);
+        break;
+      case 'j':
+        castJutsu();
+        break;
+    }
+    updatePlayerPos();
+  };
+
+  // Simple jutsu casting animation & message
+  function castJutsu() {
+    if(playerData.jutsus.length === 0) return;
+    const jutsu = playerData.jutsus[Math.floor(Math.random() * playerData.jutsus.length)];
+    showMessage(`Casting ${jutsu}! 🔥`, 2000);
+    player.style.filter = 'drop-shadow(0 0 10px orange)';
+    setTimeout(() => {
+      player.style.filter = '';
+    }, 400);
+  }
+
+  // Keep player in bounds on window resize
+  window.onresize = () => {
+    x = Math.min(x, window.innerWidth - 40);
+    y = Math.min(y, window.innerHeight - 40);
+    updatePlayerPos();
+  };
+</script>
+
+</body>
+  </html>
