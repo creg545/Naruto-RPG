@@ -1,492 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Naruto RPG Expanded</title>
-<style>
-  html, body {
-    margin:0; padding:0; overflow:hidden;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background:#222; color:#eee;
-    user-select:none;
-  }
-  #creation {
-    position:absolute; top:10px; left:10px;
-    background:#111; padding:20px;
-    border-radius:8px; width:320px;
-    z-index:10;
-  }
-  #game {
-    display:none;
-    width:100vw; height:100vh;
-    position:relative;
-    background-size: cover;
-    background-position:center;
-  }
-  #player {
-    width:40px; height:40px;
-    background:url('https://i.imgur.com/jQsDL0S.png') center/contain no-repeat;
-    position:absolute;
-    top:50%; left:50%;
-    transform: translate(-50%, -50%);
-    z-index:5;
-  }
-  #npc {
-    width:40px; height:40px;
-    background:url('https://i.imgur.com/zXjzCR6.png') center/contain no-repeat;
-    position:absolute;
-    z-index:4;
-    cursor:pointer;
-  }
-  #info {
-    position:absolute;
-    top:10px; left:10px;
-    background:rgba(0,0,0,0.75);
-    padding:12px;
-    border-radius:8px;
-    max-width:320px;
-    font-size:14px;
-    line-height:1.4;
-    z-index:8;
-    user-select:none;
-  }
-  ul { padding-left:18px; margin-top:6px; }
-  button { cursor:pointer; padding:6px 12px; font-size:14px; }
-  #message {
-    position:absolute;
-    bottom:10px; left:50%;
-    transform: translateX(-50%);
-    background:rgba(0,0,0,0.8);
-    padding:10px 20px;
-    border-radius:10px;
-    font-size:16px;
-    z-index:9;
-    display:none;
-    max-width:90vw;
-    text-align:center;
-  }
-  #travel {
-    margin-top:8px;
-    background:#333;
-    color:#eee;
-    border:none;
-    padding:8px;
-    border-radius:6px;
-    width:100%;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ff6600" />
+  <title>Naruto RPG</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    body { margin: 0; font-family: sans-serif; background-color: #000; color: #fff; text-align: center; }
+    #game { width: 100vw; height: 100vh; background: url('leaf-village.jpg') center/cover no-repeat; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    input, button, select { padding: 10px; margin: 10px; border: none; border-radius: 10px; }
+    .touch-controls { position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; gap: 20px; }
+    .touch-controls button { width: 60px; height: 60px; background: #ff6600; color: white; font-size: 24px; border-radius: 50%; }
+    #player { position: absolute; width: 40px; height: 40px; background: red; border-radius: 50%; }
+  </style>
 </head>
 <body>
+  <div id="game">
+    <h1>Create Your Ninja</h1>
+    <input id="charName" placeholder="Enter your name" />
+    <select id="clanSelect">
+      <option value="Uzumaki">Uzumaki</option>
+      <option value="Uchiha">Uchiha</option>
+      <option value="Hyuga">Hyuga</option>
+      <option value="Nara">Nara</option>
+    </select>
+    <button onclick="startGame()">Start Game</button>
+  </div>  <div id="player" style="display:none; top: 50vh; left: 50vw;"></div>
+  <div class="touch-controls" style="display: none" id="controls">
+    <button onclick="move('left')">⬅️</button>
+    <button onclick="move('up')">⬆️</button>
+    <button onclick="move('down')">⬇️</button>
+    <button onclick="move('right')">➡️</button>
+  </div>  <script>
+    let character = {};
+    const player = document.getElementById('player');
 
-<div id="creation">
-  <h3>Create Character</h3>
-  <input id="firstName" placeholder="First Name" /><br><br>
-  <select id="clanSelect" aria-label="Select Clan">
-    <option value="" disabled selected>Select Clan</option>
-    <option>Uzumaki</option>
-    <option>Uchiha</option>
-    <option>Hyuga</option>
-    <option>Nara</option>
-    <option>Yamanaka</option>
-    <option>Akimichi</option>
-    <option>Aburame</option>
-    <option>Inuzuka</option>
-    <option>Kaguya</option>
-    <option>Senju</option>
-    <option>Otsutsuki</option>
-  </select><br><br>
-  <button onclick="startGame()">Start</button>
-</div>
+    function startGame() {
+      const name = document.getElementById('charName').value.trim();
+      const clan = document.getElementById('clanSelect').value;
+      if (!name) return alert('Please enter a name.');
 
-<div id="game">
-  <div id="player" aria-label="Player character"></div>
-  <div id="npc" title="Click to talk" aria-label="Non-player character" style="display:none;"></div>
-  <div id="info" role="region" aria-live="polite">
-    <div id="welcome"></div>
-    <h4>Jutsus:</h4>
-    <ul id="jutsus"></ul>
-    <p><b>Controls:</b> WASD or arrows to move. Press <b>J</b> to cast jutsu.</p>
-    <select id="travel" title="Travel to another village" style="display:none;"></select>
-  </div>
-</div>
+      character.name = name;
+      character.clan = clan;
+      character.mentor = clan === 'Uchiha' ? 'Kakashi' : clan === 'Uzumaki' ? 'Jiraiya' : 'Iruka';
+      character.special = clan === 'Uzumaki' ? 'You hold Kurama, the Nine-Tailed Fox!' : '';
 
-<div id="message" role="alert" aria-live="assertive"></div>
+      document.getElementById('game').innerHTML = `
+        <h2>Welcome ${character.name} of the ${character.clan} Clan</h2>
+        <p>Your mentor is <strong>${character.mentor}</strong></p>
+        <p>${character.special}</p>
+        <p>Explore the Leaf Village and begin your journey!</p>
+      `;
 
-<script>
-  // Elements
-  const creation = document.getElementById('creation');
-  const game = document.getElementById('game');
-  const player = document.getElementById('player');
-  const npc = document.getElementById('npc');
-  const welcome = document.getElementById('welcome');
-  const jutsusList = document.getElementById('jutsus');
-  const message = document.getElementById('message');
-  const travelSelect = document.getElementById('travel');
-
-  // Game state variables
-  let x, y;
-  const speed = 10;
-  let canMove = false;
-  let currentVillage = 'Leaf';
-  const villages = {
-    Leaf: {
-      bg: 'https://i.imgur.com/f0EM3Ez.jpg',
-      npcs: [{x: 300, y: 300, name:'Kakashi', dialog:'Train hard to awaken your Sharingan!'}],
-      unlocks: ['Sand'],
-    },
-    Sand: {
-      bg: 'https://i.imgur.com/8RwDN9U.jpg',
-      npcs: [{x: 200, y: 400, name:'Gaara', dialog:'Control your sand to protect the village.'}],
-      unlocks: ['Mist'],
-    },
-    Mist: {
-      bg: 'https://i.imgur.com/xk6eWzx.jpg',
-      npcs: [{x: 400, y: 200, name:'Zabuza', dialog:'Mist ninja never show mercy!'}],
-      unlocks: [],
-    }
-  };
-  let unlockedVillages = ['Leaf'];
-
-  let playerData = {
-    firstName: '',
-    clan: '',
-    mentor: '',
-    mentorMsg: '',
-    jutsus: [],
-  };
-
-  // Start the game after character creation
-  function startGame() {
-    const firstName = document.getElementById('firstName').value.trim();
-    const clan = document.getElementById('clanSelect').value;
-    if (!firstName || !clan) {
-      alert("Please enter your first name and select a clan.");
-      return;
+      document.getElementById('controls').style.display = 'flex';
+      player.style.display = 'block';
     }
 
-    playerData.firstName = firstName;
-    playerData.clan = clan;
-
-    // Mentor and jutsus by clan
-    switch(clan) {
-      case 'Uzumaki':
-        playerData.mentor = 'Jiraiya';
-        playerData.mentorMsg = "Let's master your sealing techniques.";
-        playerData.jutsus = ['Sealing Jutsu', 'Adamantine Sealing Chains'];
-        break;
-      case 'Uchiha':
-        playerData.mentor = 'Kakashi';
-        playerData.mentorMsg = "Time to awaken your Sharingan.";
-        playerData.jutsus = ['Fireball Jutsu', 'Sharingan'];
-        break;
-      case 'Hyuga':
-        playerData.mentor = 'Hiashi';
-        playerData.mentorMsg = "Train your Byakugan and Gentle Fist.";
-        playerData.jutsus = ['Byakugan', 'Gentle Fist'];
-        break;
-      case 'Nara':
-        playerData.mentor = 'Shikamaru';
-        playerData.mentorMsg = "Use your shadow manipulation wisely.";
-        playerData.jutsus = ['Shadow Possession Jutsu'];
-        break;
-      case 'Yamanaka':
-        playerData.mentor = 'Ino';
-        playerData.mentorMsg = "Focus on mind transfer techniques.";
-        playerData.jutsus = ['Mind Body Switch Technique'];
-        break;
-      case 'Akimichi':
-        playerData.mentor = 'Choji';
-        playerData.mentorMsg = "Build your strength and size.";
-        playerData.jutsus = ['Multi-Size Technique'];
-        break;
-      case 'Aburame':
-        playerData.mentor = 'Shino';
-        playerData.mentorMsg = "Control your bugs carefully.";
-        playerData.jutsus = ['Insect Jutsu'];
-        break;
-      case 'Inuzuka':
-        playerData.mentor = 'Kiba';
-        playerData.mentorMsg = "Partner with your canine.";
-        playerData.jutsus = ['Beast Human Clone'];
-        break;
-      case 'Kaguya':
-        playerData.mentor = 'Kimimaro';
-        playerData.mentorMsg = "Master your bone techniques.";
-        playerData.jutsus = ['Dance of the Camellia'];
-        break;
-      case 'Senju':
-        playerData.mentor = 'Tsunade';
-        playerData.mentorMsg = "Harness your healing abilities.";
-        playerData.jutsus = ['Medical Ninjutsu', 'Wood Release'];
-        break;
-      case 'Otsutsuki':
-        playerData.mentor = 'Kaguya';
-        playerData.mentorMsg = "Master godly chakra powers.";
-        playerData.jutsus = ['Truth-Seeking Balls', 'Chakra Absorption'];
-        break;
-      default:
-        playerData.mentor = 'Iruka';
-        playerData.mentorMsg = "Welcome to the ninja world.";
-        playerData.jutsus = ['Basic Ninja Techniques'];
+    function move(direction) {
+      const step = 10;
+      const top = parseInt(player.style.top);
+      const left = parseInt(player.style.left);
+      if (direction === 'up') player.style.top = (top - step) + 'px';
+      if (direction === 'down') player.style.top = (top + step) + 'px';
+      if (direction === 'left') player.style.left = (left - step) + 'px';
+      if (direction === 'right') player.style.left = (left + step) + 'px';
     }
 
-    creation.style.display = 'none';
-    game.style.display = 'block';
-
-    // Start position center screen
-    x = window.innerWidth / 2;
-    y = window.innerHeight / 2;
-    updatePlayerPos();
-
-    showVillage(currentVillage);
-    updateInfo();
-    setupTravel();
-    canMove = true;
-  }
-
-  // Show village and NPC
-  function showVillage(village) {
-    if (!villages[village]) return;
-    currentVillage = village;
-    game.style.backgroundImage = `url('${villages[village].bg}')`;
-
-    // Place first NPC
-    const npcs = villages[village].npcs;
-    if (npcs.length > 0) {
-      npc.style.left = npcs[0].x + 'px';
-      npc.style.top = npcs[0].y + 'px';
-      npc.style.display = 'block';
-      npc.dataset.dialog = npcs[0].dialog;
-      npc.title = npcs[0].name + ' (click to talk)';
-    } else {
-      npc.style.display = 'none';
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service worker registered:', reg.scope))
+        .catch(err => console.error('Service worker error:', err));
     }
-  }
-
-  // Update info panel
-  function updateInfo() {
-    welcome.innerHTML = `<b>Welcome, ${playerData.firstName} ${playerData.clan}!</b><br>Your mentor: ${playerData.mentor}<br>${playerData.mentorMsg}`;
-    jutsusList.innerHTML = playerData.jutsus.map(j => `<li>${j}</li>`).join('');
-  }
-
-  // Update player position on screen
-  function updatePlayerPos() {
-    player.style.left = x + 'px';
-    player.style.top = y + 'px';
-  }
-
-  // Travel dropdown setup
-  function setupTravel() {
-    travelSelect.style.display = 'block';
-    travelSelect.innerHTML = '';
-    const defaultOption = document.createElement('option');
-    defaultOption.text = 'Travel to another village';
-    defaultOption.disabled = true;
-    defaultOption.selected = true;
-    travelSelect.appendChild(defaultOption);
-
-    unlockedVillages.forEach(v => {
-      if (v !== currentVillage) {
-        let opt = document.createElement('option');
-        opt.value = v;
-        opt.text = v + ' Village';
-        travelSelect.appendChild(opt);
-      }
-    });
-
-    travelSelect.onchange = () => {
-      const dest = travelSelect.value;
-      if(dest && villages[dest]){
-        showMessage(`Traveling to ${dest} Village...`);
-        setTimeout(() => {
-          showVillage(dest);
-          travelSelect.selectedIndex = 0;
-          x = window.innerWidth / 2;
-          y = window.innerHeight / 2;
-          updatePlayerPos();
-          currentVillage = dest;
-        }, 1500);
-      }
-    }
-  }
-
-  // NPC interaction unlocks new village(s)
-  npc.onclick = () => {
-    if(!npc.dataset.dialog) return;
-    showMessage(npc.dataset.dialog);
-
-    const unlocks = villages[currentVillage].unlocks || [];
-    unlocks.forEach(v => {
-      if (!unlockedVillages.includes(v)) {
-        unlockedVillages.push(v);
-        showMessage(`You unlocked ${v} Village! You can now travel there.`);
-        setupTravel();
-      }
-    });
-  };
-
-  // Show message popup
-  let msgTimeout;
-  function showMessage(txt, duration = 3000) {
-    clearTimeout(msgTimeout);
-    message.style.display = 'block';
-    message.textContent = txt;
-    msgTimeout = setTimeout(() => {
-      message.style.display = 'none';
-    }, duration);
-  }
-
-  // Movement controls and jutsu casting
-  document.onkeydown = e => {
-    if (!canMove) return;
-    switch(e.key.toLowerCase()) {
-      case 'w':
-      case 'arrowup':
-        y = Math.max(0, y - speed);
-        break;
-      case 's':
-      case 'arrowdown':
-        y = Math.min(window.innerHeight - 40, y + speed);
-        break;
-      case 'a':
-      case 'arrowleft':
-        x = Math.max(0, x - speed);
-        break;
-      case 'd':
-      case 'arrowright':
-        x = Math.min(window.innerWidth - 40, x + speed);
-        break;
-      case 'j':
-        castJutsu();
-        break;
-    }
-    updatePlayerPos();
-  };
-
-  // Simple jutsu casting animation & message
-  function castJutsu() {
-    if(playerData.jutsus.length === 0) return;
-    const jutsu = playerData.jutsus[Math.floor(Math.random() * playerData.jutsus.length)];
-    showMessage(`Casting ${jutsu}! 🔥`, 2000);
-    player.style.filter = 'drop-shadow(0 0 10px orange)';
-    setTimeout(() => {
-      player.style.filter = '';
-    }, 400);
-  }
-
-  // Keep player in bounds on window resize
-  window.onresize = () => {
-    x = Math.min(x, window.innerWidth - 40);
-    y = Math.min(y, window.innerHeight - 40);
-    updatePlayerPos();
-  };
-</script>
-
-</body>
-  </html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>Naruto RPG</title>
-<style>
-  body { margin: 0; background: #222; color: #fff; font-family: Arial, sans-serif; overflow: hidden; }
-  #gameCanvas { background: #333; display: block; margin: 0 auto; }
-  #touch-controls {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    user-select: none;
-  }
-  #touch-controls button {
-    width: 50px;
-    height: 50px;
-    margin: 2px;
-    font-size: 24px;
-    border-radius: 8px;
-    border: none;
-    background: #555;
-    color: white;
-    opacity: 0.8;
-  }
-  #touch-controls button:active {
-    background: #888;
-  }
-</style>
-</head>
-<body>
-
-<!-- Your existing UI elements and game container -->
-
-<canvas id="gameCanvas" width="400" height="400"></canvas>
-
-<!-- Touch Controls -->
-<div id="touch-controls">
-  <button ontouchstart="moveKey('ArrowUp', true)" ontouchend="moveKey('ArrowUp', false)">▲</button><br>
-  <button ontouchstart="moveKey('ArrowLeft', true)" ontouchend="moveKey('ArrowLeft', false)">◀</button>
-  <button ontouchstart="moveKey('ArrowDown', true)" ontouchend="moveKey('ArrowDown', false)">▼</button>
-  <button ontouchstart="moveKey('ArrowRight', true)" ontouchend="moveKey('ArrowRight', false)">▶</button>
-</div>
-
-<script>
-  // Your existing JavaScript code here...
-
-  // Example movement variables you probably already have:
-  const keysPressed = {};
-
-  // Add this helper function to simulate key presses from touch
-  function moveKey(key, isPressed) {
-    keysPressed[key] = isPressed;
-  }
-
-  // Add your existing keyboard listeners (if not present)
-  window.addEventListener('keydown', (e) => {
-    keysPressed[e.key] = true;
-  });
-  window.addEventListener('keyup', (e) => {
-    keysPressed[e.key] = false;
-  });
-
-  // Your existing game loop and movement update should work with keysPressed object
-  // For example:
-
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
-
-  let player = { x: 200, y: 200, size: 20, color: 'orange' };
-
-  function update() {
-    if (keysPressed['ArrowUp']) player.y -= 2;
-    if (keysPressed['ArrowDown']) player.y += 2;
-    if (keysPressed['ArrowLeft']) player.x -= 2;
-    if (keysPressed['ArrowRight']) player.x += 2;
-
-    // Keep player inside canvas bounds
-    player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
-    player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.size, player.size);
-
-    // Draw NPCs, villages, or other game stuff here...
-  }
-
-  function gameLoop() {
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-  }
-
-  gameLoop();
-
-</script>
-
-</body>
+  </script></body>
 </html>
