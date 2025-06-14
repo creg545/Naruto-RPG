@@ -1,75 +1,219 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#ff6600" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Naruto RPG</title>
-  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ff6600" />
+  
+  <!-- Manifest as data URL -->
+  <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiTmFydXRvIFJQRyIsImxvbmcibmFtZSI6Ik5hcnV0byBSUEciLCJzdGFydXJsIjoibmFydXRvLXJwZy5odG1sIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxJVFBPSUEiLCJuYW1lIjoiTmFydXRvIEljb24ifV19" />
+  
   <style>
-    body { margin: 0; font-family: sans-serif; background-color: #000; color: #fff; text-align: center; }
-    #game { width: 100vw; height: 100vh; background: url('leaf-village.jpg') center/cover no-repeat; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    input, button, select { padding: 10px; margin: 10px; border: none; border-radius: 10px; }
-    .touch-controls { position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; gap: 20px; }
-    .touch-controls button { width: 60px; height: 60px; background: #ff6600; color: white; font-size: 24px; border-radius: 50%; }
-    #player { position: absolute; width: 40px; height: 40px; background: red; border-radius: 50%; }
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #141e30, #243b55);
+      color: white;
+      overflow: hidden;
+      user-select: none;
+    }
+    #game {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    input, select, button {
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+    #player {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: orange;
+      border-radius: 50%;
+      top: 50vh;
+      left: 50vw;
+      display: none;
+      box-shadow: 0 0 10px 2px #ff6600;
+    }
+    .touch-controls {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      display: none;
+      user-select: none;
+    }
+    .touch-controls button {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      font-size: 24px;
+      background: #ff6600;
+      border: none;
+      color: white;
+      box-shadow: 0 0 8px #ff6600;
+    }
+    #status {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.4);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div id="game">
     <h1>Create Your Ninja</h1>
-    <input id="charName" placeholder="Enter your name" />
-    <select id="clanSelect">
+    <input id="charName" placeholder="Enter your ninja name" autocomplete="off" />
+    <select id="clanSelect" aria-label="Choose your clan">
       <option value="Uzumaki">Uzumaki</option>
       <option value="Uchiha">Uchiha</option>
       <option value="Hyuga">Hyuga</option>
       <option value="Nara">Nara</option>
     </select>
-    <button onclick="startGame()">Start Game</button>
-  </div>  <div id="player" style="display:none; top: 50vh; left: 50vw;"></div>
-  <div class="touch-controls" style="display: none" id="controls">
-    <button onclick="move('left')">⬅️</button>
-    <button onclick="move('up')">⬆️</button>
-    <button onclick="move('down')">⬇️</button>
-    <button onclick="move('right')">➡️</button>
-  </div>  <script>
-    let character = {};
-    const player = document.getElementById('player');
+    <button id="startBtn">Start Game</button>
+  </div>
 
-    function startGame() {
-      const name = document.getElementById('charName').value.trim();
-      const clan = document.getElementById('clanSelect').value;
-      if (!name) return alert('Please enter a name.');
+  <div id="player" tabindex="0" aria-label="Player character"></div>
 
-      character.name = name;
-      character.clan = clan;
-      character.mentor = clan === 'Uchiha' ? 'Kakashi' : clan === 'Uzumaki' ? 'Jiraiya' : 'Iruka';
-      character.special = clan === 'Uzumaki' ? 'You hold Kurama, the Nine-Tailed Fox!' : '';
+  <div class="touch-controls" id="controls">
+    <button aria-label="Move Left" data-dir="left">⬅️</button>
+    <button aria-label="Move Up" data-dir="up">⬆️</button>
+    <button aria-label="Move Down" data-dir="down">⬇️</button>
+    <button aria-label="Move Right" data-dir="right">➡️</button>
+  </div>
 
-      document.getElementById('game').innerHTML = `
-        <h2>Welcome ${character.name} of the ${character.clan} Clan</h2>
-        <p>Your mentor is <strong>${character.mentor}</strong></p>
-        <p>${character.special}</p>
-        <p>Explore the Leaf Village and begin your journey!</p>
-      `;
+  <div id="status" aria-live="polite"></div>
 
-      document.getElementById('controls').style.display = 'flex';
-      player.style.display = 'block';
+<script>
+  // Basic character and game setup
+  const player = document.getElementById('player');
+  const controls = document.getElementById('controls');
+  const status = document.getElementById('status');
+  const gameDiv = document.getElementById('game');
+  const nameInput = document.getElementById('charName');
+  const clanSelect = document.getElementById('clanSelect');
+  const startBtn = document.getElementById('startBtn');
+
+  let character = {
+    name: '',
+    clan: '',
+    mentor: '',
+    kurama: false,
+  };
+
+  function updateStatus(text) {
+    status.textContent = text;
+  }
+
+  startBtn.onclick = () => {
+    const name = nameInput.value.trim();
+    if (!name) {
+      alert('Please enter your ninja name!');
+      return;
+    }
+    character.name = name;
+    character.clan = clanSelect.value;
+
+    // Assign mentors and Kurama for Uzumaki
+    if (character.clan === 'Uchiha') {
+      character.mentor = 'Kakashi';
+      character.kurama = false;
+    } else if (character.clan === 'Uzumaki') {
+      character.mentor = 'Jiraiya';
+      character.kurama = true;
+    } else {
+      character.mentor = 'Iruka';
+      character.kurama = false;
     }
 
-    function move(direction) {
-      const step = 10;
-      const top = parseInt(player.style.top);
-      const left = parseInt(player.style.left);
-      if (direction === 'up') player.style.top = (top - step) + 'px';
-      if (direction === 'down') player.style.top = (top + step) + 'px';
-      if (direction === 'left') player.style.left = (left - step) + 'px';
-      if (direction === 'right') player.style.left = (left + step) + 'px';
+    gameDiv.innerHTML = `
+      <h2>Welcome, ${character.name} of the ${character.clan} Clan!</h2>
+      <p>Your mentor is <strong>${character.mentor}</strong>.</p>
+      <p>${character.kurama ? 'You possess the mighty power of Kurama!' : ''}</p>
+      <p>Use arrow keys or on-screen buttons to move your ninja.</p>
+      <p>Press "Add to Home Screen" from your browser menu to install this game as an app!</p>
+    `;
+
+    player.style.display = 'block';
+    controls.style.display = 'flex';
+
+    // Center player
+    player.style.top = '50vh';
+    player.style.left = '50vw';
+
+    updateStatus(`Playing as ${character.name} (${character.clan})`);
+  };
+
+  // Movement handling
+  const step = 15;
+  function movePlayer(direction) {
+    const top = player.offsetTop;
+    const left = player.offsetLeft;
+    const maxX = window.innerWidth - player.offsetWidth;
+    const maxY = window.innerHeight - player.offsetHeight;
+
+    let newTop = top;
+    let newLeft = left;
+
+    switch (direction) {
+      case 'up': newTop = Math.max(0, top - step); break;
+      case 'down': newTop = Math.min(maxY, top + step); break;
+      case 'left': newLeft = Math.max(0, left - step); break;
+      case 'right': newLeft = Math.min(maxX, left + step); break;
     }
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('Service worker registered:', reg.scope))
-        .catch(err => console.error('Service worker error:', err));
+    player.style.top = newTop + 'px';
+    player.style.left = newLeft + 'px';
+  }
+
+  // Keyboard controls
+  window.addEventListener('keydown', e => {
+    if (!player.style.display || player.style.display === 'none') return;
+    switch (e.key) {
+      case 'ArrowUp': movePlayer('up'); break;
+      case 'ArrowDown': movePlayer('down'); break;
+      case 'ArrowLeft': movePlayer('left'); break;
+      case 'ArrowRight': movePlayer('right'); break;
     }
-  </script></body>
+  });
+
+  // Touch controls buttons
+  controls.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('touchstart', e => {
+      e.preventDefault();
+      movePlayer(btn.getAttribute('data-dir'));
+    });
+  });
+
+  // Register a very basic service worker for offline & PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([`
+      self.addEventListener('install', e => self.skipWaiting());
+      self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+      self.addEventListener('fetch', e => {});
+    `], {type: 'application/javascript'}))).then(() => {
+      console.log('Service Worker registered.');
+    }).catch(err => {
+      console.warn('Service Worker registration failed:', err);
+    });
+  }
+</script>
+
+</body>
 </html>
