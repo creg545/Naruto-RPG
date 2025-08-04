@@ -1,234 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Naruto RPG: Ultimate Tailed Beast Edition</title>
-<meta name="theme-color" content="#ff6600" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Naruto RPG - Save & Kurama Mode</title>
 <style>
-  html, body { margin: 0; padding: 0; background: #0b0c10; color: white; font-family: sans-serif; overflow-x: hidden; }
-  #screen { padding: 10px; position: relative; min-height: 100vh; }
-  #logo { position: absolute; top: 10px; right: 10px; width: 100px; }
-  input, select, button { padding: 8px; margin: 4px; border-radius: 5px; font-size: 14px; border: none; }
-  .hide { display: none; }
-  .controls { position: fixed; bottom: 10px; width: 100%; display: flex; justify-content: center; gap: 10px; }
-  .controls button { width: 40px; height: 40px; font-size: 18px; background: orange; border: none; border-radius: 50%; color: white; }
-  #player, .npc, .enemy { width: 40px; height: 40px; position: absolute; border-radius: 50%; }
-  #player { background: orange; display: none; }
-  .npc { background: green; }
-  .enemy { background: red; }
-  #cutscene, #dialogue, #status, #inventory { position: fixed; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px; z-index: 99; }
-  #cutscene, #dialogue { bottom: 80px; width: 90%; left: 5%; text-align: center; }
-  #status { top: 10px; left: 10px; }
-  #inventory { bottom: 120px; left: 5%; width: 90%; max-height: 200px; overflow-y: auto; border: 2px solid orange; display: none; }
-  #shop { position: fixed; top: 60px; left: 5%; width: 90%; background: #111; padding: 10px; border: 2px solid orange; border-radius: 10px; z-index: 99; display: none; }
+  html, body { margin: 0; padding: 0; background: #000; color: white; font-family: Arial, sans-serif; overflow: hidden; }
+  canvas { display: block; margin: 0 auto; background-size: cover; }
+  #ui { position: absolute; top: 10px; left: 10px; z-index: 10; display: flex; flex-wrap: wrap; gap: 5px; }
+  #chakra { position: absolute; bottom: 10px; left: 10px; background: blue; height: 10px; width: 100px; border: 1px solid white; }
+  #chakra::after { content: ''; display: block; height: 100%; background: cyan; width: 100%; transition: width 0.2s; }
+  #log { position: absolute; bottom: 30px; left: 10px; font-size: 14px; max-width: 300px; background: rgba(0,0,0,0.7); padding: 5px; border-radius: 5px; }
+  button { background: #f90; color: white; border: none; padding: 5px 10px; border-radius: 5px; }
 </style>
 </head>
 <body>
-<div id="screen">
-  <img id="logo" src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Logo_Naruto.svg" alt="Naruto Logo" />
-  <div id="create">
-    <h1>Create Your Ninja</h1>
-    <input id="name" placeholder="Name" />
-    <select id="clan">
-      <option>Uzumaki</option><option>Uchiha</option><option>Hyuga</option><option>Senju</option>
-    </select>
-    <select id="bloodline">
-      <option value="">None</option>
-      <option>Sharingan</option><option>Byakugan</option><option>Wood Release</option>
-    </select>
-    <select id="nature">
-      <option>Fire</option><option>Water</option><option>Earth</option><option>Wind</option><option>Lightning</option>
-    </select>
-    <select id="tailed">
-      <option value="">No Beast</option><option>Shukaku (1T)</option><option>Matatabi (2T)</option><option>Isobu (3T)</option><option>Son Goku (4T)</option><option>Kokuo (5T)</option><option>Saiken (6T)</option><option>Chomei (7T)</option><option>Gyuki (8T)</option><option>Kurama (9T)</option>
-    </select>
-    <select id="faction">
-      <option>Shinobi</option><option>ANBU</option><option>Akatsuki</option>
-    </select>
-    <button onclick="startGame()">Start Game</button>
-  </div>
-
-  <div id="game" class="hide">
-    <h2 id="welcome"></h2>
-    <p id="mentor"></p>
-    <p id="summary"></p>
-    <p id="techniques"></p>
-    <button onclick="train()">Train</button>
-    <button onclick="mission()">Mission</button>
-    <button onclick="fightBoss()">Boss Fight</button>
-    <button onclick="showInventory()">Inventory</button>
-    <button onclick="toggle('shop')">Shop</button>
-    <button onclick="saveGame()">Save</button>
-    <button onclick="loadGame()">Load</button>
-    <h3>Level: <span id="level">1</span> | Rank: <span id="rank">Academy</span></h3>
-    <div>Party: <span id="party"></span></div>
-  </div>
-
-  <div id="cutscene" class="hide"></div>
-  <div id="dialogue" class="hide"></div>
-  <div id="status"></div>
-  <div id="inventory"></div>
-  <div id="shop">
-    <h3>Shop</h3>
-    <button onclick="buyItem('Potion')">Potion - 10 Ryo</button>
-    <button onclick="buyItem('Scroll')">Scroll - 15 Ryo</button>
-    <button onclick="toggle('shop')">Close</button>
-  </div>
-  <div id="player"></div>
-  <div class="controls">
-    <button onclick="move('left')">◀</button>
-    <button onclick="move('up')">▲</button>
-    <button onclick="move('down')">▼</button>
-    <button onclick="move('right')">▶</button>
-  </div>
+<audio id="sndKunai" src="https://cdn.pixabay.com/audio/2021/08/04/audio_6eabbf4e6a.mp3"></audio>
+<audio id="sndRoar" src="https://cdn.pixabay.com/audio/2022/03/10/audio_bf5a5d453b.mp3"></audio>
+<div id="ui">
+  <button onclick="doAction('kunai')">Kunai</button>
+  <button onclick="doAction('shuriken')">Shuriken</button>
+  <button onclick="doAction('fireball')">Fireball</button>
+  <button onclick="doAction('rasengan')">Rasengan</button>
+  <button onclick="doAction('chidori')">Chidori</button>
+  <button onclick="doAction('shadowClone')">Shadow Clone</button>
+  <button onclick="doAction('heal')">Heal</button>
+  <button onclick="doAction('summon')">Summon (Gamakichi)</button>
+  <button onclick="doAction('summonAlt')">Summon (Katsuyu)</button>
+  <button onclick="doAction('transform')">Beast Cloak</button>
+  <button onclick="doAction('kuramaMode')">Kurama Mode</button>
+  <button onclick="doAction('bijuuFinal')">Final Bijuu Form</button>
+  <button onclick="doAction('roar')">Roar</button>
+  <button onclick="startMission()">Mission</button>
+  <button onclick="travelVillage()">Travel Village</button>
+  <button onclick="saveGame()">Save</button>
+  <button onclick="loadGame()">Load</button>
+  <button onclick="resetGame()">Reset</button>
+  <span>HP: <span id="hp">100</span></span>
 </div>
+<div id="chakra"><div id="chakraBar"></div></div>
+<div id="log">Welcome to the Naruto RPG!</div>
+<canvas id="gameCanvas" width="800" height="500"></canvas>
 <script>
-let char = { level:1, hp:100, ryo:100, items:[], party:[], village:'Leaf' };
-const mentors = {Uzumaki:'Jiraiya',Uchiha:'Kakashi',Hyuga:'Hiashi',Senju:'Tobirama'};
-const forbiddenTechniques = ['Reaper Death Seal','Edo Tensei'];
-const bloodlinePowers = {Sharingan:'Copy Jutsu',Byakugan:'Gentle Fist','Wood Release':'Healing'};
-const allies = ['Naruto','Sasuke','Sakura','Lee','Neji','Gaara'];
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const sndKunai = document.getElementById('sndKunai');
+const sndRoar = document.getElementById('sndRoar');
+let player = {
+  x: 400, y: 250, size: 20, color: 'orange', vx: 0, vy: 0,
+  hp: 100, chakra: 100, element: 'Fire', bloodline: 'Uzumaki', stage: 0
+};
+let enemies = [], kunais = [], shurikens = [], fireballs = [], rasengans = [], chidori = [], clones = [], summons = [];
+let currentVillage = 'Leaf';
+const villageMaps = {
+  Leaf: 'https://i.ibb.co/jVjsZ7z/leaf-village-bg.jpg',
+  Sand: 'https://i.ibb.co/dLQLh3K/sand-village.jpg',
+  Mist: 'https://i.ibb.co/vHmy7cp/mist-village.jpg',
+  Cloud: 'https://i.ibb.co/ZhVb6Jx/cloud-village.jpg',
+  Stone: 'https://i.ibb.co/T01dGWZ/stone-village.jpg'
+};
+canvas.style.backgroundImage = `url('${villageMaps[currentVillage]}')`;function drawPlayer() { const stages = ['orange', 'gold', 'red', 'darkred']; ctx.fillStyle = stages[player.stage] || 'orange'; ctx.beginPath(); ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'white'; ctx.fillText(${player.bloodline} | ${player.element}, player.x - 30, player.y - 25); ctx.fillText(Village: ${currentVillage}, player.x - 30, player.y - 40); }
 
-function startGame() {
-  char.name = document.getElementById('name').value;
-  char.clan = document.getElementById('clan').value;
-  char.bloodline = document.getElementById('bloodline').value;
-  char.nature = document.getElementById('nature').value;
-  char.tail = document.getElementById('tailed').value;
-  char.faction = document.getElementById('faction').value;
-  char.mentor = mentors[char.clan];
-  char.party = [char.name];
-  document.getElementById('create').classList.add('hide');
-  document.getElementById('game').classList.remove('hide');
-  document.getElementById('player').style.display = 'block';
-  document.getElementById('welcome').innerText = `Welcome ${char.name} of the ${char.clan} Clan`;
-  document.getElementById('mentor').innerText = `Mentor: ${char.mentor}`;
-  document.getElementById('summary').innerText = `Nature: ${char.nature} | Tailed Beast: ${char.tail}`;
-  document.getElementById('techniques').innerText = `${char.bloodline ? 'Bloodline: ' + bloodlinePowers[char.bloodline] + '. ' : ''}Forbidden: ${forbiddenTechniques[Math.floor(Math.random()*forbiddenTechniques.length)]}`;
-  document.getElementById('party').innerText = char.party.join(', ');
-  playSound();
-}
+function drawObjects(list, color, size) { ctx.fillStyle = color; list.forEach(p => { ctx.fillRect(p.x, p.y, size.w, size.h); p.x += p.vx; }); }
 
-function train() {
-  char.level++;
-  char.ryo += 5;
-  updateRank();
-  document.getElementById('status').innerText = '+1 Level, +5 Ryo';
-  if (char.party.length < 4) {
-    const ally = allies[char.party.length];
-    char.party.push(ally);
-    document.getElementById('party').innerText = char.party.join(', ');
-    dialogue(`${ally} joined your team!`);
-  }
-}
+function drawEnemies() { ctx.fillStyle = 'red'; enemies.forEach(e => { ctx.fillRect(e.x, e.y, e.size, e.size); if (player.x < e.x) e.x -= 0.5; else e.x += 0.5; if (player.y < e.y) e.y -= 0.5; else e.y += 0.5; if (Math.abs(player.x - e.x) < 20 && Math.abs(player.y - e.y) < 20) { player.hp -= 1; updateHUD(); } }); }
 
-function mission() {
-  let success = Math.random() > 0.3;
-  if (success) {
-    char.level++;
-    char.ryo += 10;
-    document.getElementById('status').innerText = 'Mission Success! +1 Level +10 Ryo';
-  } else {
-    char.hp -= 10;
-    document.getElementById('status').innerText = 'Mission Failed. -10 HP';
-  }
-  updateRank();
-}
+function drawSummons() { summons.forEach(s => { ctx.fillStyle = s.type === 'katsuyu' ? 'lightblue' : 'purple'; ctx.fillRect(s.x, s.y, 30, 30); ctx.fillStyle = 'white'; ctx.fillText(s.type.toUpperCase(), s.x, s.y - 5); }); }
 
-function fightBoss() {
-  let dmg = Math.floor(Math.random()*30);
-  char.hp -= dmg;
-  if (char.hp <= 0) char.hp = 1;
-  char.level += 2;
-  char.ryo += 25;
-  dialogue(`Boss defeated! +2 Levels +25 Ryo (-${dmg} HP)`);
-  updateRank();
-}
+function doAction(type) { if (type === 'kunai') { kunais.push({ x: player.x, y: player.y, vx: 6 }); sndKunai.play(); } if (type === 'shuriken') shurikens.push({ x: player.x, y: player.y, vx: 8 }); if (type === 'fireball' && player.chakra >= 10) { fireballs.push({ x: player.x, y: player.y, vx: 7 }); player.chakra -= 10; } if (type === 'rasengan' && player.chakra >= 20) { rasengans.push({ x: player.x, y: player.y, vx: 9 }); player.chakra -= 20; } if (type === 'chidori' && player.chakra >= 20) { chidori.push({ x: player.x, y: player.y, vx: 10 }); player.chakra -= 20; } if (type === 'shadowClone' && player.chakra >= 15) { clones.push({ x: player.x + 30, y: player.y }); player.chakra -= 15; } if (type === 'summon' && player.chakra >= 30) { summons.push({ x: player.x + 40, y: player.y, type: 'gamakichi' }); player.chakra -= 30; log("Summoned Gamakichi!"); } if (type === 'summonAlt' && player.chakra >= 30) { summons.push({ x: player.x - 40, y: player.y, type: 'katsuyu' }); player.chakra -= 30; log("Summoned Katsuyu!"); } if (type === 'heal' && player.chakra >= 20) { player.hp += 20; if (player.hp > 100) player.hp = 100; player.chakra -= 20; } if (type === 'transform' && player.chakra >= 50) { player.stage = 1; player.size = 25; player.chakra -= 50; log("Beast Cloak activated!"); } if (type === 'kuramaMode' && player.chakra >= 70) { player.stage = 2; player.size = 28; player.chakra -= 70; log("Kurama Chakra Mode!"); } if (type === 'bijuuFinal' && player.chakra >= 90) { player.stage = 3; player.size = 32; player.chakra -= 90; log("Final Bijuu Transformation!"); } if (type === 'roar' && player.stage > 0) { log("RAAAAAWR!!!"); sndRoar.play(); enemies.forEach(e => e.x += 20); } updateHUD(); }
 
-function updateRank() {
-  let r = 'Academy';
-  if (char.level >= 100) r = 'Hokage';
-  else if (char.level >= 60) r = 'Jonin';
-  else if (char.level >= 30) r = 'Chunin';
-  else if (char.level >= 10) r = 'Genin';
-  document.getElementById('level').innerText = char.level;
-  document.getElementById('rank').innerText = r;
-}
+function startMission() { enemies.push({ x: 50, y: 50, size: 20 }); log(Mission: Defend the ${currentVillage} Village!); }
 
-function showInventory() {
-  const inv = document.getElementById('inventory');
-  inv.innerHTML = `<h3>Inventory</h3> Ryo: ${char.ryo}<ul>${char.items.map(i=>`<li>${i}</li>`).join('') || '<li>Empty</li>'}</ul>`;
-  inv.style.display = inv.style.display === 'block' ? 'none' : 'block';
-}
+function travelVillage() { const villages = Object.keys(villageMaps); const currentIndex = villages.indexOf(currentVillage); currentVillage = villages[(currentIndex + 1) % villages.length]; canvas.style.backgroundImage = url('${villageMaps[currentVillage]}'); log(You traveled to ${currentVillage} Village!); }
 
-function buyItem(item) {
-  let cost = item === 'Potion' ? 10 : 15;
-  if (char.ryo >= cost) {
-    char.ryo -= cost;
-    char.items.push(item);
-    document.getElementById('status').innerText = `Bought ${item}`;
-  } else {
-    document.getElementById('status').innerText = `Not enough Ryo for ${item}`;
-  }
-  showInventory();
-}
+function updateHUD() { document.getElementById('hp').innerText = player.hp; document.getElementById('chakraBar').style.width = player.chakra + '%'; }
 
-function move(dir) {
-  let p = document.getElementById('player');
-  let t = p.offsetTop, l = p.offsetLeft, s = 20;
-  if (dir === 'up') t -= s;
-  if (dir === 'down') t += s;
-  if (dir === 'left') l -= s;
-  if (dir === 'right') l += s;
-  p.style.top = t + 'px';
-  p.style.left = l + 'px';
-}
+function log(text) { document.getElementById('log').innerText = text; }
 
-function toggle(id) {
-  const el = document.getElementById(id);
-  el.style.display = el.style.display === 'block' ? 'none' : 'block';
-}
+function saveGame() { localStorage.setItem('narutoGame', JSON.stringify({ player, currentVillage })); log("Game saved!"); }
 
-function dialogue(msg) {
-  const d = document.getElementById('dialogue');
-  d.innerText = msg;
-  d.classList.remove('hide');
-  setTimeout(() => d.classList.add('hide'), 5000);
-}
+function loadGame() { const save = JSON.parse(localStorage.getItem('narutoGame')); if (save) { player = save.player; currentVillage = save.currentVillage; canvas.style.backgroundImage = url('${villageMaps[currentVillage]}'); updateHUD(); log("Game loaded!"); } else log("No save data found."); }
 
-function cutscene(msg) {
-  const c = document.getElementById('cutscene');
-  c.innerText = msg;
-  c.classList.remove('hide');
-  setTimeout(() => c.classList.add('hide'), 4000);
-}
+function resetGame() { player = { x: 400, y: 250, size: 20, color: 'orange', vx: 0, vy: 0, hp: 100, chakra: 100, element: 'Fire', bloodline: 'Uzumaki', stage: 0 }; enemies = []; kunais = []; shurikens = []; fireballs = []; rasengans = []; chidori = []; clones = []; summons = []; updateHUD(); log("Game Reset. Ready to play."); }
 
-function playSound() {
-  const audio = new Audio('https://cdn.pixabay.com/audio/2021/11/24/audio_956a0b17ce.mp3');
-  audio.play();
-}
+function handleHits() { enemies = enemies.filter(e => { return ![...kunais, ...shurikens, ...fireballs, ...rasengans, ...chidori].some(p => Math.abs(p.x - e.x) < 20); }); }
 
-function saveGame() {
-  localStorage.setItem('narutoGame', JSON.stringify(char));
-  dialogue('Game Saved!');
-}
+function update() { player.x += player.vx; player.y += player.vy; if (player.chakra < 100) player.chakra += 0.1; handleHits(); }
 
-function loadGame() {
-  let data = localStorage.getItem('narutoGame');
-  if (data) {
-    char = JSON.parse(data);
-    document.getElementById('create').classList.add('hide');
-    document.getElementById('game').classList.remove('hide');
-    document.getElementById('player').style.display = 'block';
-    document.getElementById('level').innerText = char.level;
-    document.getElementById('rank').innerText = 'Loaded';
-    document.getElementById('party').innerText = char.party.join(', ');
-    document.getElementById('status').innerText = `Game Loaded. Welcome back ${char.name}`;
-  } else {
-    dialogue('No save data found.');
-  }
-}
-</script>
+function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); drawPlayer(); drawObjects(kunais, 'silver', {w:10,h:4}); drawObjects(shurikens, 'blue', {w:6,h:6}); drawObjects(fireballs, 'orange', {w:12,h:6}); drawObjects(rasengans, 'cyan', {w:16,h:8}); drawObjects(chidori, 'lightblue', {w:12,h:6}); drawEnemies(); drawSummons(); clones.forEach(c => ctx.fillRect(c.x, c.y, 20, 20)); }
+
+function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+document.addEventListener('keydown', e => { if (e.key === 'ArrowUp') player.vy = -2; if (e.key === 'ArrowDown') player.vy = 2; if (e.key === 'ArrowLeft') player.vx = -2; if (e.key === 'ArrowRight') player.vx = 2; });
+
+document.addEventListener('keyup', e => { if (['ArrowUp','ArrowDown'].includes(e.key)) player.vy = 0; if (['ArrowLeft','ArrowRight'].includes(e.key)) player.vx = 0; });
+
+canvas.addEventListener('touchstart', e => { const x = e.touches[0].clientX, y = e.touches[0].clientY; player.vx = x > canvas.width/2 ? 2 : -2; player.vy = y > canvas.height/2 ? 2 : -2; }); canvas.addEventListener('touchend', () => { player.vx = 0; player.vy = 0; });
+
+loadGame(); loop(); </script>
+
 </body>
-                                                                                                                                                              </html>
+</html>
