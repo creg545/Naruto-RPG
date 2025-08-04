@@ -1,219 +1,234 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Naruto RPG</title>
-  <meta name="theme-color" content="#ff6600" />
-  
-  <!-- Manifest as data URL -->
-  <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiTmFydXRvIFJQRyIsImxvbmcibmFtZSI6Ik5hcnV0byBSUEciLCJzdGFydXJsIjoibmFydXRvLXJwZy5odG1sIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxJVFBPSUEiLCJuYW1lIjoiTmFydXRvIEljb24ifV19" />
-  
-  <style>
-    html, body {
-      margin: 0; padding: 0; height: 100%;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #141e30, #243b55);
-      color: white;
-      overflow: hidden;
-      user-select: none;
-    }
-    #game {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    input, select, button {
-      padding: 10px;
-      margin: 10px 0;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-    }
-    #player {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      background: orange;
-      border-radius: 50%;
-      top: 50vh;
-      left: 50vw;
-      display: none;
-      box-shadow: 0 0 10px 2px #ff6600;
-    }
-    .touch-controls {
-      position: fixed;
-      bottom: 20px;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      display: none;
-      user-select: none;
-    }
-    .touch-controls button {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      font-size: 24px;
-      background: #ff6600;
-      border: none;
-      color: white;
-      box-shadow: 0 0 8px #ff6600;
-    }
-    #status {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.4);
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Naruto RPG: Ultimate Tailed Beast Edition</title>
+<meta name="theme-color" content="#ff6600" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0b0c10; color: white; font-family: sans-serif; overflow-x: hidden; }
+  #screen { padding: 10px; position: relative; min-height: 100vh; }
+  #logo { position: absolute; top: 10px; right: 10px; width: 100px; }
+  input, select, button { padding: 8px; margin: 4px; border-radius: 5px; font-size: 14px; border: none; }
+  .hide { display: none; }
+  .controls { position: fixed; bottom: 10px; width: 100%; display: flex; justify-content: center; gap: 10px; }
+  .controls button { width: 40px; height: 40px; font-size: 18px; background: orange; border: none; border-radius: 50%; color: white; }
+  #player, .npc, .enemy { width: 40px; height: 40px; position: absolute; border-radius: 50%; }
+  #player { background: orange; display: none; }
+  .npc { background: green; }
+  .enemy { background: red; }
+  #cutscene, #dialogue, #status, #inventory { position: fixed; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px; z-index: 99; }
+  #cutscene, #dialogue { bottom: 80px; width: 90%; left: 5%; text-align: center; }
+  #status { top: 10px; left: 10px; }
+  #inventory { bottom: 120px; left: 5%; width: 90%; max-height: 200px; overflow-y: auto; border: 2px solid orange; display: none; }
+  #shop { position: fixed; top: 60px; left: 5%; width: 90%; background: #111; padding: 10px; border: 2px solid orange; border-radius: 10px; z-index: 99; display: none; }
+</style>
 </head>
 <body>
-  <div id="game">
+<div id="screen">
+  <img id="logo" src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Logo_Naruto.svg" alt="Naruto Logo" />
+  <div id="create">
     <h1>Create Your Ninja</h1>
-    <input id="charName" placeholder="Enter your ninja name" autocomplete="off" />
-    <select id="clanSelect" aria-label="Choose your clan">
-      <option value="Uzumaki">Uzumaki</option>
-      <option value="Uchiha">Uchiha</option>
-      <option value="Hyuga">Hyuga</option>
-      <option value="Nara">Nara</option>
+    <input id="name" placeholder="Name" />
+    <select id="clan">
+      <option>Uzumaki</option><option>Uchiha</option><option>Hyuga</option><option>Senju</option>
     </select>
-    <button id="startBtn">Start Game</button>
+    <select id="bloodline">
+      <option value="">None</option>
+      <option>Sharingan</option><option>Byakugan</option><option>Wood Release</option>
+    </select>
+    <select id="nature">
+      <option>Fire</option><option>Water</option><option>Earth</option><option>Wind</option><option>Lightning</option>
+    </select>
+    <select id="tailed">
+      <option value="">No Beast</option><option>Shukaku (1T)</option><option>Matatabi (2T)</option><option>Isobu (3T)</option><option>Son Goku (4T)</option><option>Kokuo (5T)</option><option>Saiken (6T)</option><option>Chomei (7T)</option><option>Gyuki (8T)</option><option>Kurama (9T)</option>
+    </select>
+    <select id="faction">
+      <option>Shinobi</option><option>ANBU</option><option>Akatsuki</option>
+    </select>
+    <button onclick="startGame()">Start Game</button>
   </div>
 
-  <div id="player" tabindex="0" aria-label="Player character"></div>
-
-  <div class="touch-controls" id="controls">
-    <button aria-label="Move Left" data-dir="left">⬅️</button>
-    <button aria-label="Move Up" data-dir="up">⬆️</button>
-    <button aria-label="Move Down" data-dir="down">⬇️</button>
-    <button aria-label="Move Right" data-dir="right">➡️</button>
+  <div id="game" class="hide">
+    <h2 id="welcome"></h2>
+    <p id="mentor"></p>
+    <p id="summary"></p>
+    <p id="techniques"></p>
+    <button onclick="train()">Train</button>
+    <button onclick="mission()">Mission</button>
+    <button onclick="fightBoss()">Boss Fight</button>
+    <button onclick="showInventory()">Inventory</button>
+    <button onclick="toggle('shop')">Shop</button>
+    <button onclick="saveGame()">Save</button>
+    <button onclick="loadGame()">Load</button>
+    <h3>Level: <span id="level">1</span> | Rank: <span id="rank">Academy</span></h3>
+    <div>Party: <span id="party"></span></div>
   </div>
 
-  <div id="status" aria-live="polite"></div>
-
+  <div id="cutscene" class="hide"></div>
+  <div id="dialogue" class="hide"></div>
+  <div id="status"></div>
+  <div id="inventory"></div>
+  <div id="shop">
+    <h3>Shop</h3>
+    <button onclick="buyItem('Potion')">Potion - 10 Ryo</button>
+    <button onclick="buyItem('Scroll')">Scroll - 15 Ryo</button>
+    <button onclick="toggle('shop')">Close</button>
+  </div>
+  <div id="player"></div>
+  <div class="controls">
+    <button onclick="move('left')">◀</button>
+    <button onclick="move('up')">▲</button>
+    <button onclick="move('down')">▼</button>
+    <button onclick="move('right')">▶</button>
+  </div>
+</div>
 <script>
-  // Basic character and game setup
-  const player = document.getElementById('player');
-  const controls = document.getElementById('controls');
-  const status = document.getElementById('status');
-  const gameDiv = document.getElementById('game');
-  const nameInput = document.getElementById('charName');
-  const clanSelect = document.getElementById('clanSelect');
-  const startBtn = document.getElementById('startBtn');
+let char = { level:1, hp:100, ryo:100, items:[], party:[], village:'Leaf' };
+const mentors = {Uzumaki:'Jiraiya',Uchiha:'Kakashi',Hyuga:'Hiashi',Senju:'Tobirama'};
+const forbiddenTechniques = ['Reaper Death Seal','Edo Tensei'];
+const bloodlinePowers = {Sharingan:'Copy Jutsu',Byakugan:'Gentle Fist','Wood Release':'Healing'};
+const allies = ['Naruto','Sasuke','Sakura','Lee','Neji','Gaara'];
 
-  let character = {
-    name: '',
-    clan: '',
-    mentor: '',
-    kurama: false,
-  };
+function startGame() {
+  char.name = document.getElementById('name').value;
+  char.clan = document.getElementById('clan').value;
+  char.bloodline = document.getElementById('bloodline').value;
+  char.nature = document.getElementById('nature').value;
+  char.tail = document.getElementById('tailed').value;
+  char.faction = document.getElementById('faction').value;
+  char.mentor = mentors[char.clan];
+  char.party = [char.name];
+  document.getElementById('create').classList.add('hide');
+  document.getElementById('game').classList.remove('hide');
+  document.getElementById('player').style.display = 'block';
+  document.getElementById('welcome').innerText = `Welcome ${char.name} of the ${char.clan} Clan`;
+  document.getElementById('mentor').innerText = `Mentor: ${char.mentor}`;
+  document.getElementById('summary').innerText = `Nature: ${char.nature} | Tailed Beast: ${char.tail}`;
+  document.getElementById('techniques').innerText = `${char.bloodline ? 'Bloodline: ' + bloodlinePowers[char.bloodline] + '. ' : ''}Forbidden: ${forbiddenTechniques[Math.floor(Math.random()*forbiddenTechniques.length)]}`;
+  document.getElementById('party').innerText = char.party.join(', ');
+  playSound();
+}
 
-  function updateStatus(text) {
-    status.textContent = text;
+function train() {
+  char.level++;
+  char.ryo += 5;
+  updateRank();
+  document.getElementById('status').innerText = '+1 Level, +5 Ryo';
+  if (char.party.length < 4) {
+    const ally = allies[char.party.length];
+    char.party.push(ally);
+    document.getElementById('party').innerText = char.party.join(', ');
+    dialogue(`${ally} joined your team!`);
   }
+}
 
-  startBtn.onclick = () => {
-    const name = nameInput.value.trim();
-    if (!name) {
-      alert('Please enter your ninja name!');
-      return;
-    }
-    character.name = name;
-    character.clan = clanSelect.value;
-
-    // Assign mentors and Kurama for Uzumaki
-    if (character.clan === 'Uchiha') {
-      character.mentor = 'Kakashi';
-      character.kurama = false;
-    } else if (character.clan === 'Uzumaki') {
-      character.mentor = 'Jiraiya';
-      character.kurama = true;
-    } else {
-      character.mentor = 'Iruka';
-      character.kurama = false;
-    }
-
-    gameDiv.innerHTML = `
-      <h2>Welcome, ${character.name} of the ${character.clan} Clan!</h2>
-      <p>Your mentor is <strong>${character.mentor}</strong>.</p>
-      <p>${character.kurama ? 'You possess the mighty power of Kurama!' : ''}</p>
-      <p>Use arrow keys or on-screen buttons to move your ninja.</p>
-      <p>Press "Add to Home Screen" from your browser menu to install this game as an app!</p>
-    `;
-
-    player.style.display = 'block';
-    controls.style.display = 'flex';
-
-    // Center player
-    player.style.top = '50vh';
-    player.style.left = '50vw';
-
-    updateStatus(`Playing as ${character.name} (${character.clan})`);
-  };
-
-  // Movement handling
-  const step = 15;
-  function movePlayer(direction) {
-    const top = player.offsetTop;
-    const left = player.offsetLeft;
-    const maxX = window.innerWidth - player.offsetWidth;
-    const maxY = window.innerHeight - player.offsetHeight;
-
-    let newTop = top;
-    let newLeft = left;
-
-    switch (direction) {
-      case 'up': newTop = Math.max(0, top - step); break;
-      case 'down': newTop = Math.min(maxY, top + step); break;
-      case 'left': newLeft = Math.max(0, left - step); break;
-      case 'right': newLeft = Math.min(maxX, left + step); break;
-    }
-
-    player.style.top = newTop + 'px';
-    player.style.left = newLeft + 'px';
+function mission() {
+  let success = Math.random() > 0.3;
+  if (success) {
+    char.level++;
+    char.ryo += 10;
+    document.getElementById('status').innerText = 'Mission Success! +1 Level +10 Ryo';
+  } else {
+    char.hp -= 10;
+    document.getElementById('status').innerText = 'Mission Failed. -10 HP';
   }
+  updateRank();
+}
 
-  // Keyboard controls
-  window.addEventListener('keydown', e => {
-    if (!player.style.display || player.style.display === 'none') return;
-    switch (e.key) {
-      case 'ArrowUp': movePlayer('up'); break;
-      case 'ArrowDown': movePlayer('down'); break;
-      case 'ArrowLeft': movePlayer('left'); break;
-      case 'ArrowRight': movePlayer('right'); break;
-    }
-  });
+function fightBoss() {
+  let dmg = Math.floor(Math.random()*30);
+  char.hp -= dmg;
+  if (char.hp <= 0) char.hp = 1;
+  char.level += 2;
+  char.ryo += 25;
+  dialogue(`Boss defeated! +2 Levels +25 Ryo (-${dmg} HP)`);
+  updateRank();
+}
 
-  // Touch controls buttons
-  controls.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('touchstart', e => {
-      e.preventDefault();
-      movePlayer(btn.getAttribute('data-dir'));
-    });
-  });
+function updateRank() {
+  let r = 'Academy';
+  if (char.level >= 100) r = 'Hokage';
+  else if (char.level >= 60) r = 'Jonin';
+  else if (char.level >= 30) r = 'Chunin';
+  else if (char.level >= 10) r = 'Genin';
+  document.getElementById('level').innerText = char.level;
+  document.getElementById('rank').innerText = r;
+}
 
-  // Register a very basic service worker for offline & PWA
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register(URL.createObjectURL(new Blob([`
-      self.addEventListener('install', e => self.skipWaiting());
-      self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-      self.addEventListener('fetch', e => {});
-    `], {type: 'application/javascript'}))).then(() => {
-      console.log('Service Worker registered.');
-    }).catch(err => {
-      console.warn('Service Worker registration failed:', err);
-    });
+function showInventory() {
+  const inv = document.getElementById('inventory');
+  inv.innerHTML = `<h3>Inventory</h3> Ryo: ${char.ryo}<ul>${char.items.map(i=>`<li>${i}</li>`).join('') || '<li>Empty</li>'}</ul>`;
+  inv.style.display = inv.style.display === 'block' ? 'none' : 'block';
+}
+
+function buyItem(item) {
+  let cost = item === 'Potion' ? 10 : 15;
+  if (char.ryo >= cost) {
+    char.ryo -= cost;
+    char.items.push(item);
+    document.getElementById('status').innerText = `Bought ${item}`;
+  } else {
+    document.getElementById('status').innerText = `Not enough Ryo for ${item}`;
   }
+  showInventory();
+}
+
+function move(dir) {
+  let p = document.getElementById('player');
+  let t = p.offsetTop, l = p.offsetLeft, s = 20;
+  if (dir === 'up') t -= s;
+  if (dir === 'down') t += s;
+  if (dir === 'left') l -= s;
+  if (dir === 'right') l += s;
+  p.style.top = t + 'px';
+  p.style.left = l + 'px';
+}
+
+function toggle(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+function dialogue(msg) {
+  const d = document.getElementById('dialogue');
+  d.innerText = msg;
+  d.classList.remove('hide');
+  setTimeout(() => d.classList.add('hide'), 5000);
+}
+
+function cutscene(msg) {
+  const c = document.getElementById('cutscene');
+  c.innerText = msg;
+  c.classList.remove('hide');
+  setTimeout(() => c.classList.add('hide'), 4000);
+}
+
+function playSound() {
+  const audio = new Audio('https://cdn.pixabay.com/audio/2021/11/24/audio_956a0b17ce.mp3');
+  audio.play();
+}
+
+function saveGame() {
+  localStorage.setItem('narutoGame', JSON.stringify(char));
+  dialogue('Game Saved!');
+}
+
+function loadGame() {
+  let data = localStorage.getItem('narutoGame');
+  if (data) {
+    char = JSON.parse(data);
+    document.getElementById('create').classList.add('hide');
+    document.getElementById('game').classList.remove('hide');
+    document.getElementById('player').style.display = 'block';
+    document.getElementById('level').innerText = char.level;
+    document.getElementById('rank').innerText = 'Loaded';
+    document.getElementById('party').innerText = char.party.join(', ');
+    document.getElementById('status').innerText = `Game Loaded. Welcome back ${char.name}`;
+  } else {
+    dialogue('No save data found.');
+  }
+}
 </script>
-
 </body>
-</html>
+                                                                                                                                                              </html>
